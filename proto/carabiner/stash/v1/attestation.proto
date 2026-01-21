@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package carabiner.stash.v1;
+
+option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stashv1";
+
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+
+// Attestation is the stored attestation metadata.
+message Attestation {
+  string attestation_id = 1;
+  string content_hash = 2;
+  string predicate_hash = 3;
+  string predicate_type = 4;
+  bool signed = 5;
+  bool validated = 6;
+  string validation_error = 7;
+  repeated string signer_identities = 8;
+  repeated Subject subjects = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp predicate_timestamp = 11;
+  google.protobuf.Timestamp updated_at = 12;
+}
+
+// Subject represents a resource descriptor from an attestation.
+message Subject {
+  string name = 1;
+  map<string, string> digest = 2; // algorithm -> value
+  string uri = 3;
+  string download_location = 4;
+  string media_type = 5;
+  map<string, google.protobuf.Any> annotations = 6; // Key-value pairs
+}

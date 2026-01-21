@@ -1,0 +1,126 @@
+syntax = "proto3";
+
+package carabiner.stash.v1;
+
+option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stashv1";
+
+import "carabiner/stash/v1/attestation.proto";
+import "carabiner/stash/v1/filters.proto";
+import "carabiner/stash/v1/publickey.proto";
+
+// StashService provides attestation storage and retrieval operations.
+service StashService {
+  // UploadAttestations stores one or more attestations.
+  rpc UploadAttestations(UploadAttestationsRequest) returns (UploadAttestationsResponse);
+
+  // GetAttestation retrieves an attestation by ID or hash.
+  rpc GetAttestation(GetAttestationRequest) returns (GetAttestationResponse);
+
+  // ListAttestations queries attestations with filters and pagination.
+  rpc ListAttestations(ListAttestationsRequest) returns (ListAttestationsResponse);
+
+  // DeleteAttestation removes an attestation.
+  rpc DeleteAttestation(DeleteAttestationRequest) returns (DeleteAttestationResponse);
+
+  // UpdateAttestation updates attestation metadata (currently not implemented).
+  rpc UpdateAttestation(UpdateAttestationRequest) returns (UpdateAttestationResponse);
+
+  // UploadPublicKey stores a public key for signature validation.
+  rpc UploadPublicKey(UploadPublicKeyRequest) returns (UploadPublicKeyResponse);
+
+  // DeletePublicKey removes a public key.
+  rpc DeletePublicKey(DeletePublicKeyRequest) returns (DeletePublicKeyResponse);
+
+  // ListPublicKeys retrieves all public keys for an organization.
+  rpc ListPublicKeys(ListPublicKeysRequest) returns (ListPublicKeysResponse);
+
+  // HealthCheck checks service health.
+  rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
+}
+
+// UploadAttestationsRequest contains attestations to upload.
+message UploadAttestationsRequest {
+  // Raw attestation JSON (max 1MB each, max 100 attestations).
+  repeated bytes attestations = 1;
+}
+
+// UploadAttestationsResponse contains upload results.
+message UploadAttestationsResponse {
+  repeated AttestationResult results = 1;
+}
+
+// AttestationResult represents the result of uploading a single attestation.
+message AttestationResult {
+  string attestation_id = 1;
+  string content_hash = 2;
+  bool stored = 3;
+  bool validated = 4;
+  string error = 5; // Error message if storage or validation failed
+}
+
+// GetAttestationRequest retrieves an attestation.
+message GetAttestationRequest {
+  oneof identifier {
+    string attestation_id = 1;
+    string content_hash = 2;
+    string predicate_hash = 3;
+  }
+
+  // If true, only return raw attestation
+  bool raw_only = 4;
+
+  // If true, only return predicate
+  bool predicate_only = 5;
+}
+
+// GetAttestationResponse contains attestation data.
+message GetAttestationResponse {
+  Attestation attestation = 1;
+  bytes raw_attestation = 2;
+  bytes raw_predicate = 3;
+}
+
+// ListAttestationsRequest queries attestations.
+message ListAttestationsRequest {
+  Filters filters = 1;
+  Cursor cursor = 2;
+}
+
+// ListAttestationsResponse contains paginated attestation list.
+message ListAttestationsResponse {
+  repeated Attestation attestations = 1;
+  Cursor next_cursor = 2;
+}
+
+// DeleteAttestationRequest deletes an attestation.
+message DeleteAttestationRequest {
+  oneof identifier {
+    string attestation_id = 1;
+    string content_hash = 2;
+  }
+}
+
+// DeleteAttestationResponse confirms deletion.
+message DeleteAttestationResponse {
+  bool deleted = 1;
+}
+
+// UpdateAttestationRequest updates attestation metadata.
+message UpdateAttestationRequest {
+  string attestation_id = 1;
+  // Future: metadata updates
+}
+
+// UpdateAttestationResponse confirms update.
+message UpdateAttestationResponse {
+  // Currently returns NOT_IMPLEMENTED status
+}
+
+// HealthCheckRequest checks service health.
+message HealthCheckRequest {}
+
+// HealthCheckResponse contains health status.
+message HealthCheckResponse {
+  string status = 1; // "healthy" or "unhealthy"
+  map<string, string> components = 2; // Component health details
+}

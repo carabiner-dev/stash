@@ -1,0 +1,17 @@
+version: v2
+managed:
+  enabled: true
+  override:
+    - file_option: go_package_prefix
+      value: github.com/carabiner-dev/stash
+inputs:
+  - directory: proto
+plugins:
+  - protoc_builtin: go
+    out: api
+    opt:
+      - paths=source_relative
+  - protoc_builtin: go-grpc
+    out: api
+    opt:
+      - paths=source_relative

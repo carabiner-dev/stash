@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package carabiner.stash.v1;
+
+option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stashv1";
+
+import "google/protobuf/timestamp.proto";
+
+// PublicKey represents a public key for signature validation.
+message PublicKey {
+  string key_id = 1;
+  bytes key_data = 2; // PEM-encoded public key
+  string algorithm = 3;
+  google.protobuf.Timestamp created_at = 4;
+}
+
+// UploadPublicKeyRequest uploads a public key.
+message UploadPublicKeyRequest {
+  bytes key_data = 1; // PEM-encoded public key
+}
+
+// UploadPublicKeyResponse returns the key ID.
+message UploadPublicKeyResponse {
+  string key_id = 1;
+}
+
+// DeletePublicKeyRequest deletes a public key.
+message DeletePublicKeyRequest {
+  string key_id = 1;
+}
+
+// DeletePublicKeyResponse confirms deletion.
+message DeletePublicKeyResponse {
+  bool deleted = 1;
+}
+
+// ListPublicKeysRequest lists public keys.
+message ListPublicKeysRequest {}
+
+// ListPublicKeysResponse contains public keys.
+message ListPublicKeysResponse {
+  repeated PublicKey keys = 1;
+}

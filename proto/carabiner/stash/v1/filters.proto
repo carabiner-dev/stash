@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package carabiner.stash.v1;
+
+option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stashv1";
+
+// Filters for querying attestations.
+message Filters {
+  string predicate_type = 1;
+  string subject_name = 2;
+  map<string, string> subject_digest = 3; // algorithm -> value
+  string subject_uri = 4;
+  string subject_name_regex = 5; // Max 256 chars
+  string subject_uri_regex = 6; // Max 256 chars
+  string signer_identity = 7;
+  bool signed_only = 8;
+  bool validated_only = 9;
+}
+
+// Cursor for pagination.
+message Cursor {
+  int32 limit = 1;
+  string offset = 2; // Opaque cursor token
+}
