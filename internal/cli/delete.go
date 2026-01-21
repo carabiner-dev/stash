@@ -52,10 +52,11 @@ Examples:
 			id := args[0]
 
 			// Get client
-			c, err := getClient()
+			c, cleanup, err := getClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
+			defer cleanup()
 
 			// Delete attestation
 			fmt.Printf("Deleting attestation %s...\n", id)

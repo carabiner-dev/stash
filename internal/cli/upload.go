@@ -56,10 +56,11 @@ Examples:
 			}
 
 			// Get client
-			c, err := getClient()
+			c, cleanup, err := getClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
+			defer cleanup()
 
 			// Read attestations
 			var attestations [][]byte
@@ -97,12 +98,12 @@ Examples:
 			successCount := 0
 			for _, result := range results {
 				if result.Error != "" {
-					fmt.Printf("❌ Failed: %s\n", result.Error)
+					fmt.Printf("Failed: %s\n", result.Error)
 				} else if result.Existed {
-					fmt.Printf("✓ Already exists: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
+					fmt.Printf("Already exists: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
 					successCount++
 				} else {
-					fmt.Printf("✓ Uploaded: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
+					fmt.Printf("Uploaded: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
 					successCount++
 				}
 			}

@@ -116,10 +116,11 @@ Examples:
 			keyPath := args[0]
 
 			// Get client
-			c, err := getClient()
+			c, cleanup, err := getClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
+			defer cleanup()
 
 			// Read key file
 			var keyData []byte
@@ -170,10 +171,11 @@ Examples:
 			}
 
 			// Get client
-			c, err := getClient()
+			c, cleanup, err := getClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
+			defer cleanup()
 
 			// List keys
 			keys, err := c.ListPublicKeys(cmd.Context())
@@ -234,10 +236,11 @@ Examples:
 			keyID := args[0]
 
 			// Get client
-			c, err := getClient()
+			c, cleanup, err := getClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
+			defer cleanup()
 
 			// Delete key
 			fmt.Printf("Deleting public key %s...\n", keyID)

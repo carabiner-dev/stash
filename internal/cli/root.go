@@ -6,6 +6,7 @@ package cli
 
 import (
 	"fmt"
+	"os"
 
 	"github.com/spf13/cobra"
 
@@ -22,8 +23,10 @@ var (
 
 // Global flags
 var (
-	flagURL   string
-	flagToken string
+	flagURL      string
+	flagToken    string
+	flagUseREST  bool
+	flagInsecure bool
 )
 
 // Execute runs the root command.
@@ -32,14 +35,18 @@ func Execute() error {
 		Use:   "stash",
 		Short: "Stash attestation storage client",
 		Long: `Stash CLI provides commands for interacting with the Stash attestation storage system.
-Upload, retrieve, query, and manage attestations and public keys.`,
+Upload, retrieve, query, and manage attestations and public keys.
+
+By default, the client uses gRPC for communication. Use --rest to fall back to REST API.`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
 	}
 
 	// Global flags
-	rootCmd.PersistentFlags().StringVar(&flagURL, "url", "", "Stash server URL (default from STASH_URL or http://localhost:8080)")
+	rootCmd.PersistentFlags().StringVar(&flagURL, "url", "", "Stash server URL (default from STASH_URL or localhost:8080)")
 	rootCmd.PersistentFlags().StringVar(&flagToken, "token", "", "Authentication token (default from STASH_TOKEN or ~/.stash/token)")
+	rootCmd.PersistentFlags().BoolVar(&flagUseREST, "rest", false, "Use REST API instead of gRPC")
+	rootCmd.PersistentFlags().BoolVar(&flagInsecure, "insecure", false, "Disable TLS for gRPC connections (for development)")
 
 	// Add subcommands
 	AddUploadCommand(rootCmd)
@@ -55,11 +62,19 @@ Upload, retrieve, query, and manage attestations and public keys.`,
 }
 
 // getClient creates a client from global flags and environment.
-func getClient() (*client.Client, error) {
+// By default, returns a gRPC client. Use --rest flag for REST client.
+func getClient() (client.StashClient, func(), error) {
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		return nil, err
+		// Check if it's just missing token - allow for dev mode without auth
+		if os.Getenv("STASH_TOKEN") == "" {
+			// Use default config without token for dev mode
+			cfg = config.DefaultConfig()
+			cfg.Token = ""
+		} else {
+			return nil, nil, err
+		}
 	}
 
 	// Override with flags if provided
@@ -70,7 +85,23 @@ func getClient() (*client.Client, error) {
 		cfg.Token = flagToken
 	}
 
-	return client.NewClientFromConfig(cfg), nil
+	// Use REST client if --rest flag is set
+	if flagUseREST {
+		return client.NewClientFromConfig(cfg), func() {}, nil
+	}
+
+	// Use gRPC client by default
+	grpcClient, err := client.NewGRPCClientFromConfig(cfg)
+	if err != nil {
+		return nil, nil, fmt.Errorf("creating gRPC client: %w", err)
+	}
+
+	// Return cleanup function to close connection
+	cleanup := func() {
+		grpcClient.Close()
+	}
+
+	return grpcClient, cleanup, nil
 }
 
 // NewVersionCommand creates the version command.

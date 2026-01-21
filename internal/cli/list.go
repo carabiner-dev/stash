@@ -108,10 +108,11 @@ Examples:
 			}
 
 			// Get client
-			c, err := getClient()
+			c, cleanup, err := getClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
+			defer cleanup()
 
 			// Build filters
 			filters := &client.Filters{
