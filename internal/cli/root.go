@@ -1,9 +1,11 @@
+// SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
+// SPDX-License-Identifier: Apache-2.0
+
 // Package cli provides CLI commands for the stash client.
 package cli
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/spf13/cobra"
 
@@ -40,13 +42,13 @@ Upload, retrieve, query, and manage attestations and public keys.`,
 	rootCmd.PersistentFlags().StringVar(&flagToken, "token", "", "Authentication token (default from STASH_TOKEN or ~/.stash/token)")
 
 	// Add subcommands
-	rootCmd.AddCommand(NewUploadCommand())
-	rootCmd.AddCommand(NewReadCommand())
-	rootCmd.AddCommand(NewListCommand())
-	rootCmd.AddCommand(NewDeleteCommand())
-	rootCmd.AddCommand(NewUpdateCommand())
-	rootCmd.AddCommand(NewVerifyCommand())
-	rootCmd.AddCommand(NewPublicKeyCommand())
+	AddUploadCommand(rootCmd)
+	AddReadCommand(rootCmd)
+	AddListCommand(rootCmd)
+	AddDeleteCommand(rootCmd)
+	AddUpdateCommand(rootCmd)
+	AddVerifyCommand(rootCmd)
+	AddPublicKeyCommand(rootCmd)
 	rootCmd.AddCommand(NewVersionCommand())
 
 	return rootCmd.Execute()
@@ -82,10 +84,4 @@ func NewVersionCommand() *cobra.Command {
 			fmt.Printf("Build date: %s\n", BuildDate)
 		},
 	}
-}
-
-// exitError prints an error and exits.
-func exitError(err error) {
-	fmt.Fprintf(os.Stderr, "Error: %v\n", err)
-	os.Exit(1)
 }

@@ -1,20 +1,82 @@
+// SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
+// SPDX-License-Identifier: Apache-2.0
+
 package cli
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 
+	"github.com/carabiner-dev/command"
 	"github.com/spf13/cobra"
 )
 
-var (
-	publicKeyJSON bool
-)
+// PublicKeyUploadOptions
 
-// NewPublicKeyCommand creates the publickey command with subcommands.
-func NewPublicKeyCommand() *cobra.Command {
+var _ command.OptionsSet = (*PublicKeyUploadOptions)(nil)
+
+// PublicKeyUploadOptions holds the options for the publickey upload command.
+type PublicKeyUploadOptions struct{}
+
+var defaultPublicKeyUploadOptions = &PublicKeyUploadOptions{}
+
+func (o *PublicKeyUploadOptions) Validate() error {
+	return nil
+}
+
+func (o *PublicKeyUploadOptions) Config() *command.OptionsSetConfig {
+	return nil
+}
+
+func (o *PublicKeyUploadOptions) AddFlags(cmd *cobra.Command) {}
+
+// PublicKeyListOptions
+
+var _ command.OptionsSet = (*PublicKeyListOptions)(nil)
+
+// PublicKeyListOptions holds the options for the publickey list command.
+type PublicKeyListOptions struct {
+	JSON bool
+}
+
+var defaultPublicKeyListOptions = &PublicKeyListOptions{
+	JSON: false,
+}
+
+func (o *PublicKeyListOptions) Validate() error {
+	return nil
+}
+
+func (o *PublicKeyListOptions) Config() *command.OptionsSetConfig {
+	return nil
+}
+
+func (o *PublicKeyListOptions) AddFlags(cmd *cobra.Command) {
+	cmd.Flags().BoolVar(&o.JSON, "json", false, "Output as JSON")
+}
+
+// PublicKeyDeleteOptions
+
+var _ command.OptionsSet = (*PublicKeyDeleteOptions)(nil)
+
+// PublicKeyDeleteOptions holds the options for the publickey delete command.
+type PublicKeyDeleteOptions struct{}
+
+var defaultPublicKeyDeleteOptions = &PublicKeyDeleteOptions{}
+
+func (o *PublicKeyDeleteOptions) Validate() error {
+	return nil
+}
+
+func (o *PublicKeyDeleteOptions) Config() *command.OptionsSetConfig {
+	return nil
+}
+
+func (o *PublicKeyDeleteOptions) AddFlags(cmd *cobra.Command) {}
+
+// AddPublicKeyCommand adds the publickey command and its subcommands to the parent.
+func AddPublicKeyCommand(parent *cobra.Command) {
 	cmd := &cobra.Command{
 		Use:     "publickey",
 		Aliases: []string{"key", "pk"},
@@ -22,15 +84,16 @@ func NewPublicKeyCommand() *cobra.Command {
 		Long:    `Upload, list, and delete public keys used for attestation verification.`,
 	}
 
-	cmd.AddCommand(newPublicKeyUploadCommand())
-	cmd.AddCommand(newPublicKeyListCommand())
-	cmd.AddCommand(newPublicKeyDeleteCommand())
+	addPublicKeyUploadCommand(cmd)
+	addPublicKeyListCommand(cmd)
+	addPublicKeyDeleteCommand(cmd)
 
-	return cmd
+	parent.AddCommand(cmd)
 }
 
-// newPublicKeyUploadCommand creates the publickey upload command.
-func newPublicKeyUploadCommand() *cobra.Command {
+// addPublicKeyUploadCommand adds the publickey upload command.
+func addPublicKeyUploadCommand(parent *cobra.Command) {
+	opts := defaultPublicKeyUploadOptions
 	cmd := &cobra.Command{
 		Use:   "upload <key-file>",
 		Short: "Upload a public key",
@@ -45,48 +108,51 @@ Examples:
   # Upload from stdin
   cat key.pem | stash publickey upload -`,
 		Args: cobra.ExactArgs(1),
-		RunE: runPublicKeyUpload,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.Validate(); err != nil {
+				return err
+			}
+
+			keyPath := args[0]
+
+			// Get client
+			c, err := getClient()
+			if err != nil {
+				return fmt.Errorf("creating client: %w", err)
+			}
+
+			// Read key file
+			var keyData []byte
+			if keyPath == "-" {
+				keyData, err = os.ReadFile(os.Stdin.Name())
+			} else {
+				keyData, err = os.ReadFile(keyPath)
+			}
+			if err != nil {
+				return fmt.Errorf("reading key file: %w", err)
+			}
+
+			// Upload key
+			fmt.Printf("Uploading public key...\n")
+			keyID, err := c.UploadPublicKey(cmd.Context(), keyData)
+			if err != nil {
+				return fmt.Errorf("uploading public key: %w", err)
+			}
+
+			fmt.Printf("✓ Public key uploaded successfully\n")
+			fmt.Printf("Key ID: %s\n", keyID)
+
+			return nil
+		},
 	}
 
-	return cmd
+	opts.AddFlags(cmd)
+	parent.AddCommand(cmd)
 }
 
-func runPublicKeyUpload(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-	keyPath := args[0]
-
-	// Get client
-	c, err := getClient()
-	if err != nil {
-		return fmt.Errorf("creating client: %w", err)
-	}
-
-	// Read key file
-	var keyData []byte
-	if keyPath == "-" {
-		keyData, err = os.ReadFile(os.Stdin.Name())
-	} else {
-		keyData, err = os.ReadFile(keyPath)
-	}
-	if err != nil {
-		return fmt.Errorf("reading key file: %w", err)
-	}
-
-	// Upload key
-	fmt.Printf("Uploading public key...\n")
-	keyID, err := c.UploadPublicKey(ctx, keyData)
-	if err != nil {
-		return fmt.Errorf("uploading public key: %w", err)
-	}
-
-	fmt.Printf("✓ Public key uploaded successfully\n")
-	fmt.Printf("Key ID: %s\n", keyID)
-
-	return nil
-}
-
-// newPublicKeyListCommand creates the publickey list command.
-func newPublicKeyListCommand() *cobra.Command {
+// addPublicKeyListCommand adds the publickey list command.
+func addPublicKeyListCommand(parent *cobra.Command) {
+	opts := defaultPublicKeyListOptions
 	cmd := &cobra.Command{
 		Use:   "list",
 		Short: "List public keys",
@@ -98,59 +164,59 @@ Examples:
 
   # List as JSON
   stash publickey list --json`,
-		RunE: runPublicKeyList,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.Validate(); err != nil {
+				return err
+			}
+
+			// Get client
+			c, err := getClient()
+			if err != nil {
+				return fmt.Errorf("creating client: %w", err)
+			}
+
+			// List keys
+			keys, err := c.ListPublicKeys(cmd.Context())
+			if err != nil {
+				return fmt.Errorf("listing public keys: %w", err)
+			}
+
+			// Output as JSON
+			if opts.JSON {
+				data, err := json.MarshalIndent(keys, "", "  ")
+				if err != nil {
+					return fmt.Errorf("marshaling JSON: %w", err)
+				}
+				fmt.Println(string(data))
+				return nil
+			}
+
+			// Output as table
+			if len(keys) == 0 {
+				fmt.Println("No public keys found")
+				return nil
+			}
+
+			fmt.Printf("Found %d public key(s)\n\n", len(keys))
+
+			for i, key := range keys {
+				fmt.Printf("%d. %s\n", i+1, key.KeyID)
+				fmt.Printf("   Algorithm: %s\n", key.Algorithm)
+				fmt.Printf("   Created:   %s\n", key.CreatedAt.Format("2006-01-02 15:04:05"))
+				fmt.Println()
+			}
+
+			return nil
+		},
 	}
 
-	cmd.Flags().BoolVar(&publicKeyJSON, "json", false, "Output as JSON")
-
-	return cmd
+	opts.AddFlags(cmd)
+	parent.AddCommand(cmd)
 }
 
-func runPublicKeyList(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-
-	// Get client
-	c, err := getClient()
-	if err != nil {
-		return fmt.Errorf("creating client: %w", err)
-	}
-
-	// List keys
-	keys, err := c.ListPublicKeys(ctx)
-	if err != nil {
-		return fmt.Errorf("listing public keys: %w", err)
-	}
-
-	// Output as JSON
-	if publicKeyJSON {
-		data, err := json.MarshalIndent(keys, "", "  ")
-		if err != nil {
-			return fmt.Errorf("marshaling JSON: %w", err)
-		}
-		fmt.Println(string(data))
-		return nil
-	}
-
-	// Output as table
-	if len(keys) == 0 {
-		fmt.Println("No public keys found")
-		return nil
-	}
-
-	fmt.Printf("Found %d public key(s)\n\n", len(keys))
-
-	for i, key := range keys {
-		fmt.Printf("%d. %s\n", i+1, key.KeyID)
-		fmt.Printf("   Algorithm: %s\n", key.Algorithm)
-		fmt.Printf("   Created:   %s\n", key.CreatedAt.Format("2006-01-02 15:04:05"))
-		fmt.Println()
-	}
-
-	return nil
-}
-
-// newPublicKeyDeleteCommand creates the publickey delete command.
-func newPublicKeyDeleteCommand() *cobra.Command {
+// addPublicKeyDeleteCommand adds the publickey delete command.
+func addPublicKeyDeleteCommand(parent *cobra.Command) {
+	opts := defaultPublicKeyDeleteOptions
 	cmd := &cobra.Command{
 		Use:   "delete <key-id>",
 		Short: "Delete a public key",
@@ -160,29 +226,31 @@ Examples:
   # Delete a public key
   stash publickey delete abc123`,
 		Args: cobra.ExactArgs(1),
-		RunE: runPublicKeyDelete,
+		RunE: func(cmd *cobra.Command, args []string) error {
+			if err := opts.Validate(); err != nil {
+				return err
+			}
+
+			keyID := args[0]
+
+			// Get client
+			c, err := getClient()
+			if err != nil {
+				return fmt.Errorf("creating client: %w", err)
+			}
+
+			// Delete key
+			fmt.Printf("Deleting public key %s...\n", keyID)
+			if err := c.DeletePublicKey(cmd.Context(), keyID); err != nil {
+				return fmt.Errorf("deleting public key: %w", err)
+			}
+
+			fmt.Println("✓ Public key deleted successfully")
+
+			return nil
+		},
 	}
 
-	return cmd
-}
-
-func runPublicKeyDelete(cmd *cobra.Command, args []string) error {
-	ctx := context.Background()
-	keyID := args[0]
-
-	// Get client
-	c, err := getClient()
-	if err != nil {
-		return fmt.Errorf("creating client: %w", err)
-	}
-
-	// Delete key
-	fmt.Printf("Deleting public key %s...\n", keyID)
-	if err := c.DeletePublicKey(ctx, keyID); err != nil {
-		return fmt.Errorf("deleting public key: %w", err)
-	}
-
-	fmt.Println("✓ Public key deleted successfully")
-
-	return nil
+	opts.AddFlags(cmd)
+	parent.AddCommand(cmd)
 }
