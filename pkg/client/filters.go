@@ -95,6 +95,7 @@ func (f *Filters) toQueryParams(cursor *Cursor) url.Values {
 type Attestation struct {
 	ID                   string            `json:"id"`
 	OrgID                string            `json:"org_id"`
+	Namespace            string            `json:"namespace"`
 	ContentHash          string            `json:"content_hash"`
 	PredicateHash        string            `json:"predicate_hash"`
 	PredicateType        string            `json:"predicate_type"`
@@ -119,6 +120,15 @@ type Subject struct {
 	DownloadLocation string            `json:"download_location,omitempty"`
 	MediaType        string            `json:"media_type,omitempty"`
 	Annotations      map[string]string `json:"annotations,omitempty"`
+}
+
+// Namespace represents a namespace for organizing attestations.
+type Namespace struct {
+	ID        int64     `json:"id"`
+	OrgID     string    `json:"org_id"`
+	Name      string    `json:"name"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
 }
 
 // AttestationList represents a list of attestations with pagination.

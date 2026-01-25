@@ -15,6 +15,8 @@ func protoToAttestation(pb *stashv1.Attestation) *Attestation {
 
 	att := &Attestation{
 		ID:               pb.AttestationId,
+		OrgID:            "", // TODO: Add to proto definition
+		Namespace:        "", // TODO: Add to proto definition
 		ContentHash:      pb.ContentHash,
 		PredicateHash:    pb.PredicateHash,
 		PredicateType:    pb.PredicateType,

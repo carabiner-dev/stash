@@ -100,7 +100,8 @@ func (c *GRPCClient) ctxWithAuth(ctx context.Context) context.Context {
 }
 
 // UploadAttestations uploads one or more attestations to the server.
-func (c *GRPCClient) UploadAttestations(ctx context.Context, attestations [][]byte) ([]*UploadResult, error) {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) UploadAttestations(ctx context.Context, orgID, namespace string, attestations [][]byte) ([]*UploadResult, error) {
 	if len(attestations) == 0 {
 		return nil, fmt.Errorf("no attestations provided")
 	}
@@ -108,6 +109,7 @@ func (c *GRPCClient) UploadAttestations(ctx context.Context, attestations [][]by
 		return nil, fmt.Errorf("batch size exceeds maximum of 100")
 	}
 
+	// TODO: Add namespace to proto definitions and request
 	resp, err := c.client.UploadAttestations(c.ctxWithAuth(ctx), &stashv1.UploadAttestationsRequest{
 		Attestations: attestations,
 	})
@@ -129,7 +131,9 @@ func (c *GRPCClient) UploadAttestations(ctx context.Context, attestations [][]by
 }
 
 // GetAttestation retrieves an attestation by ID or hash.
-func (c *GRPCClient) GetAttestation(ctx context.Context, id string) (*Attestation, []byte, []byte, error) {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) GetAttestation(ctx context.Context, orgID, namespace, id string) (*Attestation, []byte, []byte, error) {
+	// TODO: Add namespace to proto definitions and request
 	resp, err := c.client.GetAttestation(c.ctxWithAuth(ctx), &stashv1.GetAttestationRequest{
 		Identifier: &stashv1.GetAttestationRequest_AttestationId{AttestationId: id},
 	})
@@ -141,7 +145,9 @@ func (c *GRPCClient) GetAttestation(ctx context.Context, id string) (*Attestatio
 }
 
 // GetAttestationRaw retrieves only the raw attestation JSON.
-func (c *GRPCClient) GetAttestationRaw(ctx context.Context, id string) ([]byte, error) {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) GetAttestationRaw(ctx context.Context, orgID, namespace, id string) ([]byte, error) {
+	// TODO: Add namespace to proto definitions and request
 	resp, err := c.client.GetAttestation(c.ctxWithAuth(ctx), &stashv1.GetAttestationRequest{
 		Identifier: &stashv1.GetAttestationRequest_AttestationId{AttestationId: id},
 		RawOnly:    true,
@@ -153,7 +159,9 @@ func (c *GRPCClient) GetAttestationRaw(ctx context.Context, id string) ([]byte, 
 }
 
 // GetAttestationPredicate retrieves only the predicate JSON.
-func (c *GRPCClient) GetAttestationPredicate(ctx context.Context, id string) ([]byte, error) {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) GetAttestationPredicate(ctx context.Context, orgID, namespace, id string) ([]byte, error) {
+	// TODO: Add namespace to proto definitions and request
 	resp, err := c.client.GetAttestation(c.ctxWithAuth(ctx), &stashv1.GetAttestationRequest{
 		Identifier: &stashv1.GetAttestationRequest_AttestationId{AttestationId: id},
 		PredicateOnly: true,
@@ -165,7 +173,9 @@ func (c *GRPCClient) GetAttestationPredicate(ctx context.Context, id string) ([]
 }
 
 // GetAttestationByHash retrieves an attestation by content hash.
-func (c *GRPCClient) GetAttestationByHash(ctx context.Context, hash string) (*Attestation, []byte, []byte, error) {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) GetAttestationByHash(ctx context.Context, orgID, namespace, hash string) (*Attestation, []byte, []byte, error) {
+	// TODO: Add namespace to proto definitions and request
 	resp, err := c.client.GetAttestation(c.ctxWithAuth(ctx), &stashv1.GetAttestationRequest{
 		Identifier: &stashv1.GetAttestationRequest_ContentHash{ContentHash: hash},
 	})
@@ -177,7 +187,9 @@ func (c *GRPCClient) GetAttestationByHash(ctx context.Context, hash string) (*At
 }
 
 // GetAttestationByPredicateHash retrieves an attestation by predicate hash.
-func (c *GRPCClient) GetAttestationByPredicateHash(ctx context.Context, hash string) (*Attestation, []byte, []byte, error) {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) GetAttestationByPredicateHash(ctx context.Context, orgID, namespace, hash string) (*Attestation, []byte, []byte, error) {
+	// TODO: Add namespace to proto definitions and request
 	resp, err := c.client.GetAttestation(c.ctxWithAuth(ctx), &stashv1.GetAttestationRequest{
 		Identifier: &stashv1.GetAttestationRequest_PredicateHash{PredicateHash: hash},
 	})
@@ -189,7 +201,9 @@ func (c *GRPCClient) GetAttestationByPredicateHash(ctx context.Context, hash str
 }
 
 // ListAttestations lists attestations with optional filters and pagination.
-func (c *GRPCClient) ListAttestations(ctx context.Context, filters *Filters, cursor *Cursor) (*AttestationList, error) {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) ListAttestations(ctx context.Context, orgID, namespace string, filters *Filters, cursor *Cursor) (*AttestationList, error) {
+	// TODO: Add namespace to proto definitions and request
 	req := &stashv1.ListAttestationsRequest{}
 
 	if filters != nil {
@@ -234,7 +248,9 @@ func (c *GRPCClient) ListAttestations(ctx context.Context, filters *Filters, cur
 }
 
 // DeleteAttestation deletes an attestation by ID or hash.
-func (c *GRPCClient) DeleteAttestation(ctx context.Context, id string) error {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) DeleteAttestation(ctx context.Context, orgID, namespace, id string) error {
+	// TODO: Add namespace to proto definitions and request
 	_, err := c.client.DeleteAttestation(c.ctxWithAuth(ctx), &stashv1.DeleteAttestationRequest{
 		Identifier: &stashv1.DeleteAttestationRequest_AttestationId{AttestationId: id},
 	})
@@ -242,7 +258,9 @@ func (c *GRPCClient) DeleteAttestation(ctx context.Context, id string) error {
 }
 
 // UpdateAttestation updates an attestation (currently not implemented).
-func (c *GRPCClient) UpdateAttestation(ctx context.Context, id string, updates map[string]interface{}) error {
+// Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+func (c *GRPCClient) UpdateAttestation(ctx context.Context, orgID, namespace, id string, updates map[string]interface{}) error {
+	// TODO: Add namespace to proto definitions and request
 	_, err := c.client.UpdateAttestation(c.ctxWithAuth(ctx), &stashv1.UpdateAttestationRequest{
 		AttestationId: id,
 	})
@@ -299,6 +317,26 @@ func (c *GRPCClient) DeletePublicKey(ctx context.Context, keyID string) error {
 		KeyId: keyID,
 	})
 	return err
+}
+
+// CreateNamespace creates a new namespace (not implemented in gRPC yet).
+func (c *GRPCClient) CreateNamespace(ctx context.Context, orgID, name string) (*Namespace, error) {
+	return nil, fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
+}
+
+// GetNamespace retrieves a namespace (not implemented in gRPC yet).
+func (c *GRPCClient) GetNamespace(ctx context.Context, orgID, name string) (*Namespace, error) {
+	return nil, fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
+}
+
+// ListNamespaces lists namespaces (not implemented in gRPC yet).
+func (c *GRPCClient) ListNamespaces(ctx context.Context, orgID string) ([]*Namespace, error) {
+	return nil, fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
+}
+
+// DeleteNamespace deletes a namespace (not implemented in gRPC yet).
+func (c *GRPCClient) DeleteNamespace(ctx context.Context, orgID, name string) error {
+	return fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
 }
 
 // HealthCheck checks server health.
