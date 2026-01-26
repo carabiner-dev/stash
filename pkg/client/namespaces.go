@@ -6,7 +6,13 @@ import (
 )
 
 // CreateNamespace creates a new namespace in the organization.
+// If orgID is empty, uses convenience endpoint with orgID from token.
 func (c *Client) CreateNamespace(ctx context.Context, orgID, name string) (*Namespace, error) {
+	// Validate orgID requirements
+	if orgID == "" && c.token == "" {
+		return nil, fmt.Errorf("orgID required for unauthenticated requests")
+	}
+
 	req := struct {
 		Name string `json:"name"`
 	}{
@@ -14,7 +20,15 @@ func (c *Client) CreateNamespace(ctx context.Context, orgID, name string) (*Name
 	}
 
 	var ns Namespace
-	path := fmt.Sprintf("/v1/namespaces/%s", orgID)
+
+	// Use convenience endpoint if orgID is empty and token is present
+	var path string
+	if orgID == "" {
+		path = "/v1/namespaces"
+	} else {
+		path = fmt.Sprintf("/v1/namespaces/%s", orgID)
+	}
+
 	if err := c.doRequest(ctx, "POST", path, req, &ns); err != nil {
 		return nil, err
 	}
@@ -23,9 +37,23 @@ func (c *Client) CreateNamespace(ctx context.Context, orgID, name string) (*Name
 }
 
 // GetNamespace retrieves a namespace by name.
+// If orgID is empty, uses convenience endpoint with orgID from token.
 func (c *Client) GetNamespace(ctx context.Context, orgID, name string) (*Namespace, error) {
+	// Validate orgID requirements
+	if orgID == "" && c.token == "" {
+		return nil, fmt.Errorf("orgID required for unauthenticated requests")
+	}
+
 	var ns Namespace
-	path := fmt.Sprintf("/v1/namespaces/%s/%s", orgID, name)
+
+	// Use convenience endpoint if orgID is empty and token is present
+	var path string
+	if orgID == "" {
+		path = fmt.Sprintf("/v1/namespaces/%s", name)
+	} else {
+		path = fmt.Sprintf("/v1/namespaces/%s/%s", orgID, name)
+	}
+
 	if err := c.doRequest(ctx, "GET", path, nil, &ns); err != nil {
 		return nil, err
 	}
@@ -34,12 +62,25 @@ func (c *Client) GetNamespace(ctx context.Context, orgID, name string) (*Namespa
 }
 
 // ListNamespaces lists all namespaces for an organization.
+// If orgID is empty, uses convenience endpoint with orgID from token.
 func (c *Client) ListNamespaces(ctx context.Context, orgID string) ([]*Namespace, error) {
+	// Validate orgID requirements
+	if orgID == "" && c.token == "" {
+		return nil, fmt.Errorf("orgID required for unauthenticated requests")
+	}
+
 	var resp struct {
 		Namespaces []*Namespace `json:"namespaces"`
 	}
 
-	path := fmt.Sprintf("/v1/namespaces/%s", orgID)
+	// Use convenience endpoint if orgID is empty and token is present
+	var path string
+	if orgID == "" {
+		path = "/v1/namespaces"
+	} else {
+		path = fmt.Sprintf("/v1/namespaces/%s", orgID)
+	}
+
 	if err := c.doRequest(ctx, "GET", path, nil, &resp); err != nil {
 		return nil, err
 	}
@@ -48,7 +89,20 @@ func (c *Client) ListNamespaces(ctx context.Context, orgID string) ([]*Namespace
 }
 
 // DeleteNamespace deletes a namespace.
+// If orgID is empty, uses convenience endpoint with orgID from token.
 func (c *Client) DeleteNamespace(ctx context.Context, orgID, name string) error {
-	path := fmt.Sprintf("/v1/namespaces/%s/%s", orgID, name)
+	// Validate orgID requirements
+	if orgID == "" && c.token == "" {
+		return fmt.Errorf("orgID required for unauthenticated requests")
+	}
+
+	// Use convenience endpoint if orgID is empty and token is present
+	var path string
+	if orgID == "" {
+		path = fmt.Sprintf("/v1/namespaces/%s", name)
+	} else {
+		path = fmt.Sprintf("/v1/namespaces/%s/%s", orgID, name)
+	}
+
 	return c.doRequest(ctx, "DELETE", path, nil, nil)
 }

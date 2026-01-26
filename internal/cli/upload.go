@@ -16,11 +16,13 @@ var _ command.OptionsSet = (*UploadOptions)(nil)
 
 // UploadOptions holds the options for the upload command.
 type UploadOptions struct {
-	Stdin bool
+	Stdin     bool
+	Namespace string
 }
 
 var defaultUploadOptions = &UploadOptions{
-	Stdin: false,
+	Stdin:     false,
+	Namespace: "",
 }
 
 func (o *UploadOptions) Validate() error {
@@ -33,6 +35,7 @@ func (o *UploadOptions) Config() *command.OptionsSetConfig {
 
 func (o *UploadOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&o.Stdin, "stdin", false, "Read attestation from stdin")
+	cmd.Flags().StringVarP(&o.Namespace, "namespace", "n", "", "Namespace for attestations (default: empty)")
 }
 
 // AddUploadCommand adds the upload command to the parent.
@@ -88,8 +91,9 @@ Examples:
 			}
 
 			// Upload attestations
-			fmt.Printf("Uploading %d attestation(s)...\n", len(attestations))
-			results, err := c.UploadAttestations(cmd.Context(), attestations)
+			fmt.Printf("Uploading %d attestation(s) to namespace %q...\n", len(attestations), opts.Namespace)
+			// Use empty orgID to leverage convenience endpoint (orgID from token)
+			results, err := c.UploadAttestations(cmd.Context(), "", opts.Namespace, attestations)
 			if err != nil {
 				return fmt.Errorf("uploading attestations: %w", err)
 			}

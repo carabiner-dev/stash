@@ -81,7 +81,7 @@ Examples:
 
 			// Handle --raw flag
 			if opts.Raw {
-				data, err := c.GetAttestationRaw(cmd.Context(), id)
+				data, err := c.GetAttestationRaw(cmd.Context(), "", "", id)
 				if err != nil {
 					return fmt.Errorf("reading attestation: %w", err)
 				}
@@ -91,7 +91,7 @@ Examples:
 
 			// Handle --predicate flag
 			if opts.Predicate {
-				data, err := c.GetAttestationPredicate(cmd.Context(), id)
+				data, err := c.GetAttestationPredicate(cmd.Context(), "", "", id)
 				if err != nil {
 					return fmt.Errorf("reading predicate: %w", err)
 				}
@@ -100,7 +100,7 @@ Examples:
 			}
 
 			// Get full attestation
-			attestation, raw, predicate, err := c.GetAttestation(cmd.Context(), id)
+			attestation, raw, predicate, err := c.GetAttestation(cmd.Context(), "", "", id)
 			if err != nil {
 				return fmt.Errorf("reading attestation: %w", err)
 			}

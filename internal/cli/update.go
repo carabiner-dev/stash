@@ -57,7 +57,7 @@ Examples:
 
 			// Attempt update (will return NOT_IMPLEMENTED)
 			updates := map[string]interface{}{}
-			if err := c.UpdateAttestation(cmd.Context(), id, updates); err != nil {
+			if err := c.UpdateAttestation(cmd.Context(), "", "", id, updates); err != nil {
 				return fmt.Errorf("updating attestation: %w", err)
 			}
 

@@ -60,7 +60,7 @@ Examples:
 
 			// Delete attestation
 			fmt.Printf("Deleting attestation %s...\n", id)
-			if err := c.DeleteAttestation(cmd.Context(), id); err != nil {
+			if err := c.DeleteAttestation(cmd.Context(), "", "", id); err != nil {
 				return fmt.Errorf("deleting attestation: %w", err)
 			}
 

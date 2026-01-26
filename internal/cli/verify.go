@@ -61,7 +61,7 @@ Examples:
 
 			// Get attestation
 			fmt.Printf("Retrieving attestation %s...\n", id)
-			attestation, _, _, err := c.GetAttestation(cmd.Context(), id)
+			attestation, _, _, err := c.GetAttestation(cmd.Context(), "", "", id)
 			if err != nil {
 				return fmt.Errorf("retrieving attestation: %w", err)
 			}

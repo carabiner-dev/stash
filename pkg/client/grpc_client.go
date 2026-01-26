@@ -101,12 +101,18 @@ func (c *GRPCClient) ctxWithAuth(ctx context.Context) context.Context {
 
 // UploadAttestations uploads one or more attestations to the server.
 // Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+// For gRPC, orgID comes from the bearer token in auth metadata, so orgID parameter is optional.
 func (c *GRPCClient) UploadAttestations(ctx context.Context, orgID, namespace string, attestations [][]byte) ([]*UploadResult, error) {
 	if len(attestations) == 0 {
 		return nil, fmt.Errorf("no attestations provided")
 	}
 	if len(attestations) > 100 {
 		return nil, fmt.Errorf("batch size exceeds maximum of 100")
+	}
+
+	// Validate orgID requirements (for consistency with REST client)
+	if orgID == "" && c.token == "" {
+		return nil, fmt.Errorf("orgID required for unauthenticated requests")
 	}
 
 	// TODO: Add namespace to proto definitions and request
@@ -132,7 +138,13 @@ func (c *GRPCClient) UploadAttestations(ctx context.Context, orgID, namespace st
 
 // GetAttestation retrieves an attestation by ID or hash.
 // Note: gRPC proto doesn't support namespace yet, so namespace parameter is ignored.
+// For gRPC, orgID comes from the bearer token in auth metadata, so orgID parameter is optional.
 func (c *GRPCClient) GetAttestation(ctx context.Context, orgID, namespace, id string) (*Attestation, []byte, []byte, error) {
+	// Validate orgID requirements (for consistency with REST client)
+	if orgID == "" && c.token == "" {
+		return nil, nil, nil, fmt.Errorf("orgID required for unauthenticated requests")
+	}
+
 	// TODO: Add namespace to proto definitions and request
 	resp, err := c.client.GetAttestation(c.ctxWithAuth(ctx), &stashv1.GetAttestationRequest{
 		Identifier: &stashv1.GetAttestationRequest_AttestationId{AttestationId: id},

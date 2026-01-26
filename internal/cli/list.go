@@ -133,7 +133,7 @@ Examples:
 			}
 
 			// List attestations
-			result, err := c.ListAttestations(cmd.Context(), filters, cursor)
+			result, err := c.ListAttestations(cmd.Context(), "", "", filters, cursor)
 			if err != nil {
 				return fmt.Errorf("listing attestations: %w", err)
 			}
