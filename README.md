@@ -330,6 +330,60 @@ key, err := stashClient.GetPublicKey(ctx, "key-id")
 err = stashClient.DeletePublicKey(ctx, "key-id")
 ```
 
+#### Attestation Framework Repository Interface
+
+The Stash client implements the [Carabiner Attestation Framework](https://github.com/carabiner-dev/attestation) repository interfaces, allowing it to be used as a backend for attestation storage and retrieval in the framework.
+
+**Implemented Interfaces:**
+- `attestation.Fetcher` - Retrieve attestations
+- `attestation.FetcherBySubject` - Filter by subject
+- `attestation.FetcherByPredicateType` - Filter by predicate type
+- `attestation.FetcherByPredicateTypeAndSubject` - Combined filtering
+- `attestation.Storer` - Store attestations
+
+```go
+import (
+    "github.com/carabiner-dev/attestation"
+    "github.com/carabiner-dev/stash/pkg/client"
+)
+
+// Create a Stash client
+stashClient := client.NewClient("https://stash.example.com", "your-token")
+
+// Wrap it with the repository client
+repo := client.NewRepositoryClient(stashClient, "my-org", "default")
+
+// Use attestation framework interfaces
+ctx := context.Background()
+
+// Fetch all attestations
+opts := attestation.FetchOptions{Limit: 50}
+envelopes, err := repo.Fetch(ctx, opts)
+
+// Fetch by predicate type
+predicateTypes := []attestation.PredicateType{
+    "https://slsa.dev/provenance/v1",
+}
+envelopes, err = repo.FetchByPredicateType(ctx, opts, predicateTypes)
+
+// Fetch by subject
+var subjects []attestation.Subject // Constructed from parsed attestations
+envelopes, err = repo.FetchBySubject(ctx, opts, subjects)
+
+// Store attestations
+var envelopesToStore []attestation.Envelope
+storeOpts := attestation.StoreOptions{}
+err = repo.Store(ctx, storeOpts, envelopesToStore)
+```
+
+**Use Cases:**
+- Integrate Stash with attestation processing pipelines
+- Use Stash as a backend for the Carabiner verification framework
+- Build attestation tools that work with multiple repository types
+- Leverage the attestation framework's query and filtering capabilities
+
+See [pkg/client/examples_test.go](pkg/client/examples_test.go) for more examples.
+
 ### Client Library Features
 
 - **Batch Operations**: Upload up to 100 attestations per request
