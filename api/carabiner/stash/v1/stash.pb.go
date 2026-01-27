@@ -24,8 +24,10 @@ const (
 // UploadAttestationsRequest contains attestations to upload.
 type UploadAttestationsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace for the attestations (empty string = default namespace).
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// Raw attestation JSON (max 1MB each, max 100 attestations).
-	Attestations  [][]byte `protobuf:"bytes,1,rep,name=attestations,proto3" json:"attestations,omitempty"`
+	Attestations  [][]byte `protobuf:"bytes,2,rep,name=attestations,proto3" json:"attestations,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -58,6 +60,13 @@ func (x *UploadAttestationsRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UploadAttestationsRequest.ProtoReflect.Descriptor instead.
 func (*UploadAttestationsRequest) Descriptor() ([]byte, []int) {
 	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *UploadAttestationsRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
 }
 
 func (x *UploadAttestationsRequest) GetAttestations() [][]byte {
@@ -192,6 +201,8 @@ func (x *AttestationResult) GetError() string {
 // GetAttestationRequest retrieves an attestation.
 type GetAttestationRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace (empty string = default namespace).
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// Types that are valid to be assigned to Identifier:
 	//
 	//	*GetAttestationRequest_AttestationId
@@ -199,9 +210,9 @@ type GetAttestationRequest struct {
 	//	*GetAttestationRequest_PredicateHash
 	Identifier isGetAttestationRequest_Identifier `protobuf_oneof:"identifier"`
 	// If true, only return raw attestation
-	RawOnly bool `protobuf:"varint,4,opt,name=raw_only,json=rawOnly,proto3" json:"raw_only,omitempty"`
+	RawOnly bool `protobuf:"varint,5,opt,name=raw_only,json=rawOnly,proto3" json:"raw_only,omitempty"`
 	// If true, only return predicate
-	PredicateOnly bool `protobuf:"varint,5,opt,name=predicate_only,json=predicateOnly,proto3" json:"predicate_only,omitempty"`
+	PredicateOnly bool `protobuf:"varint,6,opt,name=predicate_only,json=predicateOnly,proto3" json:"predicate_only,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -234,6 +245,13 @@ func (x *GetAttestationRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use GetAttestationRequest.ProtoReflect.Descriptor instead.
 func (*GetAttestationRequest) Descriptor() ([]byte, []int) {
 	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *GetAttestationRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
 }
 
 func (x *GetAttestationRequest) GetIdentifier() isGetAttestationRequest_Identifier {
@@ -289,15 +307,15 @@ type isGetAttestationRequest_Identifier interface {
 }
 
 type GetAttestationRequest_AttestationId struct {
-	AttestationId string `protobuf:"bytes,1,opt,name=attestation_id,json=attestationId,proto3,oneof"`
+	AttestationId string `protobuf:"bytes,2,opt,name=attestation_id,json=attestationId,proto3,oneof"`
 }
 
 type GetAttestationRequest_ContentHash struct {
-	ContentHash string `protobuf:"bytes,2,opt,name=content_hash,json=contentHash,proto3,oneof"`
+	ContentHash string `protobuf:"bytes,3,opt,name=content_hash,json=contentHash,proto3,oneof"`
 }
 
 type GetAttestationRequest_PredicateHash struct {
-	PredicateHash string `protobuf:"bytes,3,opt,name=predicate_hash,json=predicateHash,proto3,oneof"`
+	PredicateHash string `protobuf:"bytes,4,opt,name=predicate_hash,json=predicateHash,proto3,oneof"`
 }
 
 func (*GetAttestationRequest_AttestationId) isGetAttestationRequest_Identifier() {}
@@ -369,9 +387,11 @@ func (x *GetAttestationResponse) GetRawPredicate() []byte {
 
 // ListAttestationsRequest queries attestations.
 type ListAttestationsRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	Filters       *Filters               `protobuf:"bytes,1,opt,name=filters,proto3" json:"filters,omitempty"`
-	Cursor        *Cursor                `protobuf:"bytes,2,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace (empty string = default namespace).
+	Namespace     string   `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Filters       *Filters `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
+	Cursor        *Cursor  `protobuf:"bytes,3,opt,name=cursor,proto3" json:"cursor,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -404,6 +424,13 @@ func (x *ListAttestationsRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListAttestationsRequest.ProtoReflect.Descriptor instead.
 func (*ListAttestationsRequest) Descriptor() ([]byte, []int) {
 	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListAttestationsRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
 }
 
 func (x *ListAttestationsRequest) GetFilters() *Filters {
@@ -476,6 +503,8 @@ func (x *ListAttestationsResponse) GetNextCursor() *Cursor {
 // DeleteAttestationRequest deletes an attestation.
 type DeleteAttestationRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace (empty string = default namespace).
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// Types that are valid to be assigned to Identifier:
 	//
 	//	*DeleteAttestationRequest_AttestationId
@@ -515,6 +544,13 @@ func (*DeleteAttestationRequest) Descriptor() ([]byte, []int) {
 	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{7}
 }
 
+func (x *DeleteAttestationRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
 func (x *DeleteAttestationRequest) GetIdentifier() isDeleteAttestationRequest_Identifier {
 	if x != nil {
 		return x.Identifier
@@ -545,11 +581,11 @@ type isDeleteAttestationRequest_Identifier interface {
 }
 
 type DeleteAttestationRequest_AttestationId struct {
-	AttestationId string `protobuf:"bytes,1,opt,name=attestation_id,json=attestationId,proto3,oneof"`
+	AttestationId string `protobuf:"bytes,2,opt,name=attestation_id,json=attestationId,proto3,oneof"`
 }
 
 type DeleteAttestationRequest_ContentHash struct {
-	ContentHash string `protobuf:"bytes,2,opt,name=content_hash,json=contentHash,proto3,oneof"`
+	ContentHash string `protobuf:"bytes,3,opt,name=content_hash,json=contentHash,proto3,oneof"`
 }
 
 func (*DeleteAttestationRequest_AttestationId) isDeleteAttestationRequest_Identifier() {}
@@ -603,8 +639,10 @@ func (x *DeleteAttestationResponse) GetDeleted() bool {
 
 // UpdateAttestationRequest updates attestation metadata.
 type UpdateAttestationRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	AttestationId string                 `protobuf:"bytes,1,opt,name=attestation_id,json=attestationId,proto3" json:"attestation_id,omitempty"` // Future: metadata updates
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace (empty string = default namespace).
+	Namespace     string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	AttestationId string `protobuf:"bytes,2,opt,name=attestation_id,json=attestationId,proto3" json:"attestation_id,omitempty"` // Future: metadata updates
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -637,6 +675,13 @@ func (x *UpdateAttestationRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use UpdateAttestationRequest.ProtoReflect.Descriptor instead.
 func (*UpdateAttestationRequest) Descriptor() ([]byte, []int) {
 	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{9}
+}
+
+func (x *UpdateAttestationRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
 }
 
 func (x *UpdateAttestationRequest) GetAttestationId() string {
@@ -777,9 +822,10 @@ var File_carabiner_stash_v1_stash_proto protoreflect.FileDescriptor
 
 const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"\n" +
-	"\x1ecarabiner/stash/v1/stash.proto\x12\x12carabiner.stash.v1\x1a$carabiner/stash/v1/attestation.proto\x1a carabiner/stash/v1/filters.proto\x1a\"carabiner/stash/v1/publickey.proto\"?\n" +
-	"\x19UploadAttestationsRequest\x12\"\n" +
-	"\fattestations\x18\x01 \x03(\fR\fattestations\"]\n" +
+	"\x1ecarabiner/stash/v1/stash.proto\x12\x12carabiner.stash.v1\x1a$carabiner/stash/v1/attestation.proto\x1a carabiner/stash/v1/filters.proto\x1a\"carabiner/stash/v1/publickey.proto\"]\n" +
+	"\x19UploadAttestationsRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\"\n" +
+	"\fattestations\x18\x02 \x03(\fR\fattestations\"]\n" +
 	"\x1aUploadAttestationsResponse\x12?\n" +
 	"\aresults\x18\x01 \x03(\v2%.carabiner.stash.v1.AttestationResultR\aresults\"\xa9\x01\n" +
 	"\x11AttestationResult\x12%\n" +
@@ -787,35 +833,39 @@ const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"\fcontent_hash\x18\x02 \x01(\tR\vcontentHash\x12\x16\n" +
 	"\x06stored\x18\x03 \x01(\bR\x06stored\x12\x1c\n" +
 	"\tvalidated\x18\x04 \x01(\bR\tvalidated\x12\x14\n" +
-	"\x05error\x18\x05 \x01(\tR\x05error\"\xde\x01\n" +
-	"\x15GetAttestationRequest\x12'\n" +
-	"\x0eattestation_id\x18\x01 \x01(\tH\x00R\rattestationId\x12#\n" +
-	"\fcontent_hash\x18\x02 \x01(\tH\x00R\vcontentHash\x12'\n" +
-	"\x0epredicate_hash\x18\x03 \x01(\tH\x00R\rpredicateHash\x12\x19\n" +
-	"\braw_only\x18\x04 \x01(\bR\arawOnly\x12%\n" +
-	"\x0epredicate_only\x18\x05 \x01(\bR\rpredicateOnlyB\f\n" +
+	"\x05error\x18\x05 \x01(\tR\x05error\"\xfc\x01\n" +
+	"\x15GetAttestationRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12'\n" +
+	"\x0eattestation_id\x18\x02 \x01(\tH\x00R\rattestationId\x12#\n" +
+	"\fcontent_hash\x18\x03 \x01(\tH\x00R\vcontentHash\x12'\n" +
+	"\x0epredicate_hash\x18\x04 \x01(\tH\x00R\rpredicateHash\x12\x19\n" +
+	"\braw_only\x18\x05 \x01(\bR\arawOnly\x12%\n" +
+	"\x0epredicate_only\x18\x06 \x01(\bR\rpredicateOnlyB\f\n" +
 	"\n" +
 	"identifier\"\xa9\x01\n" +
 	"\x16GetAttestationResponse\x12A\n" +
 	"\vattestation\x18\x01 \x01(\v2\x1f.carabiner.stash.v1.AttestationR\vattestation\x12'\n" +
 	"\x0fraw_attestation\x18\x02 \x01(\fR\x0erawAttestation\x12#\n" +
-	"\rraw_predicate\x18\x03 \x01(\fR\frawPredicate\"\x84\x01\n" +
-	"\x17ListAttestationsRequest\x125\n" +
-	"\afilters\x18\x01 \x01(\v2\x1b.carabiner.stash.v1.FiltersR\afilters\x122\n" +
-	"\x06cursor\x18\x02 \x01(\v2\x1a.carabiner.stash.v1.CursorR\x06cursor\"\x9c\x01\n" +
+	"\rraw_predicate\x18\x03 \x01(\fR\frawPredicate\"\xa2\x01\n" +
+	"\x17ListAttestationsRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x125\n" +
+	"\afilters\x18\x02 \x01(\v2\x1b.carabiner.stash.v1.FiltersR\afilters\x122\n" +
+	"\x06cursor\x18\x03 \x01(\v2\x1a.carabiner.stash.v1.CursorR\x06cursor\"\x9c\x01\n" +
 	"\x18ListAttestationsResponse\x12C\n" +
 	"\fattestations\x18\x01 \x03(\v2\x1f.carabiner.stash.v1.AttestationR\fattestations\x12;\n" +
 	"\vnext_cursor\x18\x02 \x01(\v2\x1a.carabiner.stash.v1.CursorR\n" +
-	"nextCursor\"v\n" +
-	"\x18DeleteAttestationRequest\x12'\n" +
-	"\x0eattestation_id\x18\x01 \x01(\tH\x00R\rattestationId\x12#\n" +
-	"\fcontent_hash\x18\x02 \x01(\tH\x00R\vcontentHashB\f\n" +
+	"nextCursor\"\x94\x01\n" +
+	"\x18DeleteAttestationRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12'\n" +
+	"\x0eattestation_id\x18\x02 \x01(\tH\x00R\rattestationId\x12#\n" +
+	"\fcontent_hash\x18\x03 \x01(\tH\x00R\vcontentHashB\f\n" +
 	"\n" +
 	"identifier\"5\n" +
 	"\x19DeleteAttestationResponse\x12\x18\n" +
-	"\adeleted\x18\x01 \x01(\bR\adeleted\"A\n" +
-	"\x18UpdateAttestationRequest\x12%\n" +
-	"\x0eattestation_id\x18\x01 \x01(\tR\rattestationId\"\x1b\n" +
+	"\adeleted\x18\x01 \x01(\bR\adeleted\"_\n" +
+	"\x18UpdateAttestationRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12%\n" +
+	"\x0eattestation_id\x18\x02 \x01(\tR\rattestationId\"\x1b\n" +
 	"\x19UpdateAttestationResponse\"\x14\n" +
 	"\x12HealthCheckRequest\"\xc5\x01\n" +
 	"\x13HealthCheckResponse\x12\x16\n" +

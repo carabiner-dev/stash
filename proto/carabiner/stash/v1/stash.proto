@@ -40,8 +40,11 @@ service StashService {
 
 // UploadAttestationsRequest contains attestations to upload.
 message UploadAttestationsRequest {
+  // Namespace for the attestations (empty string = default namespace).
+  string namespace = 1;
+
   // Raw attestation JSON (max 1MB each, max 100 attestations).
-  repeated bytes attestations = 1;
+  repeated bytes attestations = 2;
 }
 
 // UploadAttestationsResponse contains upload results.
@@ -60,17 +63,20 @@ message AttestationResult {
 
 // GetAttestationRequest retrieves an attestation.
 message GetAttestationRequest {
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
   oneof identifier {
-    string attestation_id = 1;
-    string content_hash = 2;
-    string predicate_hash = 3;
+    string attestation_id = 2;
+    string content_hash = 3;
+    string predicate_hash = 4;
   }
 
   // If true, only return raw attestation
-  bool raw_only = 4;
+  bool raw_only = 5;
 
   // If true, only return predicate
-  bool predicate_only = 5;
+  bool predicate_only = 6;
 }
 
 // GetAttestationResponse contains attestation data.
@@ -82,8 +88,11 @@ message GetAttestationResponse {
 
 // ListAttestationsRequest queries attestations.
 message ListAttestationsRequest {
-  Filters filters = 1;
-  Cursor cursor = 2;
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
+  Filters filters = 2;
+  Cursor cursor = 3;
 }
 
 // ListAttestationsResponse contains paginated attestation list.
@@ -94,9 +103,12 @@ message ListAttestationsResponse {
 
 // DeleteAttestationRequest deletes an attestation.
 message DeleteAttestationRequest {
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
   oneof identifier {
-    string attestation_id = 1;
-    string content_hash = 2;
+    string attestation_id = 2;
+    string content_hash = 3;
   }
 }
 
@@ -107,7 +119,10 @@ message DeleteAttestationResponse {
 
 // UpdateAttestationRequest updates attestation metadata.
 message UpdateAttestationRequest {
-  string attestation_id = 1;
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
+  string attestation_id = 2;
   // Future: metadata updates
 }
 
