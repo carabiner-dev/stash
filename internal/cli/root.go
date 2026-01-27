@@ -35,7 +35,7 @@ func Execute() error {
 		Use:   "stash",
 		Short: "Stash attestation storage client",
 		Long: `Stash CLI provides commands for interacting with the Stash attestation storage system.
-Upload, retrieve, query, and manage attestations and public keys.
+Push, retrieve, query, and manage attestations and public keys.
 
 By default, the client uses gRPC for communication. Use --rest to fall back to REST API.`,
 		SilenceUsage:  true,
@@ -49,8 +49,8 @@ By default, the client uses gRPC for communication. Use --rest to fall back to R
 	rootCmd.PersistentFlags().BoolVar(&flagInsecure, "insecure", false, "Disable TLS for gRPC connections (for development)")
 
 	// Add subcommands
-	AddUploadCommand(rootCmd)
-	AddReadCommand(rootCmd)
+	AddPushCommand(rootCmd)
+	AddGetCommand(rootCmd)
 	AddListCommand(rootCmd)
 	AddDeleteCommand(rootCmd)
 	AddUpdateCommand(rootCmd)

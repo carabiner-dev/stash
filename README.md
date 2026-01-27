@@ -48,42 +48,42 @@ Configuration precedence: CLI flags > environment variables > config files
 
 ### Commands
 
-#### Upload Attestations
+#### Push Attestations
 
-Upload one or more attestation files to the server:
+Push one or more attestation files to the server:
 
 ```bash
-# Upload from files
-stash upload attestation1.json attestation2.json
+# Push from files
+stash push attestation1.json attestation2.json
 
-# Upload from stdin
-cat attestation.json | stash upload --stdin
+# Push from stdin
+cat attestation.json | stash push --stdin
 
-# Upload multiple files with pattern
-stash upload attestations/*.json
+# Push multiple files with pattern
+stash push attestations/*.json
 ```
 
 Supports batch uploads of up to 100 attestations at once.
 
-#### Read Attestations
+#### Get Attestations
 
 Retrieve attestations by ID or hash:
 
 ```bash
 # Get full attestation with metadata
-stash read <attestation-id>
+stash get <attestation-id>
 
 # Get only raw attestation JSON
-stash read <attestation-id> --raw
+stash get <attestation-id> --raw
 
 # Get only predicate JSON
-stash read <attestation-id> --predicate
+stash get <attestation-id> --predicate
 
 # Query by content hash
-stash read sha256:a1b2c3d4...
+stash get sha256:a1b2c3d4...
 
 # Output as JSON
-stash read <attestation-id> --json
+stash get <attestation-id> --json
 ```
 
 #### List Attestations

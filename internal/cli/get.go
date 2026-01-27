@@ -11,59 +11,59 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var _ command.OptionsSet = (*ReadOptions)(nil)
+var _ command.OptionsSet = (*GetOptions)(nil)
 
-// ReadOptions holds the options for the read command.
-type ReadOptions struct {
+// GetOptions holds the options for the get command.
+type GetOptions struct {
 	Raw       bool
 	Predicate bool
 }
 
-var defaultReadOptions = &ReadOptions{
+var defaultGetOptions = &GetOptions{
 	Raw:       false,
 	Predicate: false,
 }
 
-func (o *ReadOptions) Validate() error {
+func (o *GetOptions) Validate() error {
 	return nil
 }
 
-func (o *ReadOptions) Config() *command.OptionsSetConfig {
+func (o *GetOptions) Config() *command.OptionsSetConfig {
 	return nil
 }
 
-func (o *ReadOptions) AddFlags(cmd *cobra.Command) {
+func (o *GetOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&o.Raw, "raw", false, "Return only raw attestation JSON")
 	cmd.Flags().BoolVar(&o.Predicate, "predicate", false, "Return only predicate JSON")
 }
 
-// AddReadCommand adds the read command to the parent.
-func AddReadCommand(parent *cobra.Command) {
-	opts := defaultReadOptions
+// AddGetCommand adds the get command to the parent.
+func AddGetCommand(parent *cobra.Command) {
+	opts := defaultGetOptions
 	cmd := &cobra.Command{
-		Use:   "read <attestation-id|hash>",
-		Short: "Read an attestation from Stash",
-		Long: `Read an attestation by ID or hash from the Stash server.
+		Use:   "get <attestation-id|hash>",
+		Short: "Get an attestation from Stash",
+		Long: `Get an attestation by ID or hash from the Stash server.
 
 By default, returns both the attestation metadata, raw JSON, and predicate JSON.
 Use --raw to get only the raw attestation JSON.
 Use --predicate to get only the predicate JSON.
 
 Examples:
-  # Read attestation with metadata
-  stash read abc123
+  # Get attestation with metadata
+  stash get abc123
 
-  # Read only raw attestation
-  stash read abc123 --raw
+  # Get only raw attestation
+  stash get abc123 --raw
 
-  # Read only predicate
-  stash read abc123 --predicate
+  # Get only predicate
+  stash get abc123 --predicate
 
-  # Read by content hash
-  stash read sha256:a1b2c3...
+  # Get by content hash
+  stash get sha256:a1b2c3...
 
-  # Read by predicate hash
-  stash read predicate:sha256:d4e5f6...`,
+  # Get by predicate hash
+  stash get predicate:sha256:d4e5f6...`,
 		Args: cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.Validate(); err != nil {
@@ -83,7 +83,7 @@ Examples:
 			if opts.Raw {
 				data, err := c.GetAttestationRaw(cmd.Context(), "", "", id)
 				if err != nil {
-					return fmt.Errorf("reading attestation: %w", err)
+					return fmt.Errorf("getting attestation: %w", err)
 				}
 				fmt.Println(string(data))
 				return nil
@@ -93,7 +93,7 @@ Examples:
 			if opts.Predicate {
 				data, err := c.GetAttestationPredicate(cmd.Context(), "", "", id)
 				if err != nil {
-					return fmt.Errorf("reading predicate: %w", err)
+					return fmt.Errorf("getting predicate: %w", err)
 				}
 				fmt.Println(string(data))
 				return nil
@@ -102,7 +102,7 @@ Examples:
 			// Get full attestation
 			attestation, raw, predicate, err := c.GetAttestation(cmd.Context(), "", "", id)
 			if err != nil {
-				return fmt.Errorf("reading attestation: %w", err)
+				return fmt.Errorf("getting attestation: %w", err)
 			}
 
 			// Print metadata

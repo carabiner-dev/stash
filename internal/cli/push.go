@@ -12,47 +12,47 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var _ command.OptionsSet = (*UploadOptions)(nil)
+var _ command.OptionsSet = (*PushOptions)(nil)
 
-// UploadOptions holds the options for the upload command.
-type UploadOptions struct {
+// PushOptions holds the options for the push command.
+type PushOptions struct {
 	Stdin     bool
 	Namespace string
 }
 
-var defaultUploadOptions = &UploadOptions{
+var defaultPushOptions = &PushOptions{
 	Stdin:     false,
 	Namespace: "",
 }
 
-func (o *UploadOptions) Validate() error {
+func (o *PushOptions) Validate() error {
 	return nil
 }
 
-func (o *UploadOptions) Config() *command.OptionsSetConfig {
+func (o *PushOptions) Config() *command.OptionsSetConfig {
 	return nil
 }
 
-func (o *UploadOptions) AddFlags(cmd *cobra.Command) {
+func (o *PushOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&o.Stdin, "stdin", false, "Read attestation from stdin")
 	cmd.Flags().StringVarP(&o.Namespace, "namespace", "n", "", "Namespace for attestations (default: empty)")
 }
 
-// AddUploadCommand adds the upload command to the parent.
-func AddUploadCommand(parent *cobra.Command) {
-	opts := defaultUploadOptions
+// AddPushCommand adds the push command to the parent.
+func AddPushCommand(parent *cobra.Command) {
+	opts := defaultPushOptions
 	cmd := &cobra.Command{
-		Use:   "upload [file...]",
-		Short: "Upload attestations to Stash",
-		Long: `Upload one or more attestations to the Stash server.
+		Use:   "push [file...]",
+		Short: "Push attestations to Stash",
+		Long: `Push one or more attestations to the Stash server.
 
 Examples:
-  # Upload from files
-  stash upload attestation1.json attestation2.json
+  # Push from files
+  stash push attestation1.json attestation2.json
 
-  # Upload from stdin
-  stash upload --stdin < attestation.json
-  cat attestation.json | stash upload --stdin`,
+  # Push from stdin
+  stash push --stdin < attestation.json
+  cat attestation.json | stash push --stdin`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.Validate(); err != nil {
 				return err
@@ -90,12 +90,12 @@ Examples:
 				}
 			}
 
-			// Upload attestations
-			fmt.Printf("Uploading %d attestation(s) to namespace %q...\n", len(attestations), opts.Namespace)
+			// Push attestations
+			fmt.Printf("Pushing %d attestation(s) to namespace %q...\n", len(attestations), opts.Namespace)
 			// Use empty orgID to leverage convenience endpoint (orgID from token)
 			results, err := c.UploadAttestations(cmd.Context(), "", opts.Namespace, attestations)
 			if err != nil {
-				return fmt.Errorf("uploading attestations: %w", err)
+				return fmt.Errorf("pushing attestations: %w", err)
 			}
 
 			// Print results
@@ -107,12 +107,12 @@ Examples:
 					fmt.Printf("Already exists: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
 					successCount++
 				} else {
-					fmt.Printf("Uploaded: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
+					fmt.Printf("Pushed: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
 					successCount++
 				}
 			}
 
-			fmt.Printf("\nSuccessfully uploaded %d of %d attestation(s)\n", successCount, len(results))
+			fmt.Printf("\nSuccessfully pushed %d of %d attestation(s)\n", successCount, len(results))
 
 			return nil
 		},
