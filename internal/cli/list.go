@@ -6,6 +6,7 @@ package cli
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	"github.com/carabiner-dev/command"
 	"github.com/spf13/cobra"
@@ -23,7 +24,7 @@ type ListOptions struct {
 	SubjectURI       string
 	SubjectNameRegex string
 	SubjectURIRegex  string
-	SubjectDigest    map[string]string
+	SubjectDigest    []string // Raw digest strings in format "algo:value"
 	SignerIdentity   string
 	SignedOnly       bool
 	ValidatedOnly    bool
@@ -40,13 +41,11 @@ var defaultListOptions = &ListOptions{
 	SubjectURI:       "",
 	SubjectNameRegex: "",
 	SubjectURIRegex:  "",
-	//SubjectDigest: "",
-	SignerIdentity: "",
-	//SignedOnly: "",
-	//ValidatedOnly: "",
-	Limit:  50,
-	Cursor: "",
-	JSON:   false,
+	SubjectDigest:    nil,
+	SignerIdentity:   "",
+	Limit:            50,
+	Cursor:           "",
+	JSON:             false,
 }
 
 func (lo *ListOptions) Validate() error {
@@ -64,7 +63,7 @@ func (lo *ListOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().StringVar(&lo.SubjectURI, "subject.uri", "", "Filter by exact subject URI")
 	cmd.Flags().StringVar(&lo.SubjectNameRegex, "subject-regex.name", "", "Filter by subject name regex (max 256 chars)")
 	cmd.Flags().StringVar(&lo.SubjectURIRegex, "subject-regex.uri", "", "Filter by subject URI regex (max 256 chars)")
-	cmd.Flags().StringToStringVar(&lo.SubjectDigest, "subject.digest", nil, "Filter by subject digest (algo=value)")
+	cmd.Flags().StringSliceVar(&lo.SubjectDigest, "subject.digest", nil, "Filter by subject digest (algo:value, can be repeated)")
 	cmd.Flags().StringVar(&lo.SignerIdentity, "signer", "", "Filter by signer identity")
 	cmd.Flags().BoolVar(&lo.SignedOnly, "signed", false, "Show only signed attestations")
 	cmd.Flags().BoolVar(&lo.ValidatedOnly, "validated", false, "Show only validated attestations")
@@ -90,6 +89,12 @@ Examples:
 
   # Filter by subject name
   stash list --subject.name "my-artifact"
+
+  # Filter by subject digest
+  stash list --subject.digest sha256:abc123def456
+
+  # Filter by multiple digests
+  stash list --subject.digest sha256:abc123 --subject.digest sha1:def456
 
   # Filter by subject URI with regex
   stash list --subject-regex.uri "pkg:.*"
@@ -123,6 +128,19 @@ Examples:
 			}
 			defer cleanup()
 
+			// Parse subject digests from "algo:value" format
+			var subjectDigest map[string]string
+			if len(opts.SubjectDigest) > 0 {
+				subjectDigest = make(map[string]string)
+				for _, digest := range opts.SubjectDigest {
+					parts := strings.SplitN(digest, ":", 2)
+					if len(parts) != 2 {
+						return fmt.Errorf("invalid digest format %q: expected algo:value", digest)
+					}
+					subjectDigest[parts[0]] = parts[1]
+				}
+			}
+
 			// Build filters
 			filters := &client.Filters{
 				PredicateType:    opts.PredicateType,
@@ -130,7 +148,7 @@ Examples:
 				SubjectURI:       opts.SubjectURI,
 				SubjectNameRegex: opts.SubjectNameRegex,
 				SubjectURIRegex:  opts.SubjectURIRegex,
-				SubjectDigest:    opts.SubjectDigest,
+				SubjectDigest:    subjectDigest,
 				SignerIdentity:   opts.SignerIdentity,
 				SignedOnly:       opts.SignedOnly,
 				ValidatedOnly:    opts.ValidatedOnly,
