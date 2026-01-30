@@ -46,6 +46,16 @@ func NewClientFromEnv() (*Client, error) {
 	return NewClientFromConfig(cfg), nil
 }
 
+// normalizeNamespace converts empty namespace to underscore for URL paths.
+// The underscore "_" is the standard representation of the default/empty namespace in URLs,
+// matching the resource URL format in JWT tokens.
+func normalizeNamespace(namespace string) string {
+	if namespace == "" {
+		return "_"
+	}
+	return namespace
+}
+
 // doRequest performs an HTTP request with authentication.
 func (c *Client) doRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
 	var bodyReader io.Reader

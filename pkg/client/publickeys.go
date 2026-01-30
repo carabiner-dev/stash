@@ -7,7 +7,12 @@ import (
 
 // UploadPublicKey uploads a public key to the server.
 // Returns the key ID assigned by the server.
-func (c *Client) UploadPublicKey(ctx context.Context, keyData []byte) (string, error) {
+// orgID must be specified - convenience endpoints have been removed.
+func (c *Client) UploadPublicKey(ctx context.Context, orgID string, keyData []byte) (string, error) {
+	if orgID == "" {
+		return "", fmt.Errorf("orgID is required")
+	}
+
 	req := struct {
 		KeyData string `json:"key_data"`
 	}{
@@ -18,20 +23,27 @@ func (c *Client) UploadPublicKey(ctx context.Context, keyData []byte) (string, e
 		KeyID string `json:"key_id"`
 	}
 
-	if err := c.doRequest(ctx, "POST", "/v1/publickeys", req, &resp); err != nil {
+	path := fmt.Sprintf("/v1/publickeys/%s", orgID)
+	if err := c.doRequest(ctx, "POST", path, req, &resp); err != nil {
 		return "", err
 	}
 
 	return resp.KeyID, nil
 }
 
-// ListPublicKeys lists all public keys for the authenticated organization.
-func (c *Client) ListPublicKeys(ctx context.Context) ([]*PublicKey, error) {
+// ListPublicKeys lists all public keys for the specified organization.
+// orgID must be specified - convenience endpoints have been removed.
+func (c *Client) ListPublicKeys(ctx context.Context, orgID string) ([]*PublicKey, error) {
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
+	}
+
 	var resp struct {
 		Keys []*PublicKey `json:"keys"`
 	}
 
-	if err := c.doRequest(ctx, "GET", "/v1/publickeys", nil, &resp); err != nil {
+	path := fmt.Sprintf("/v1/publickeys/%s", orgID)
+	if err := c.doRequest(ctx, "GET", path, nil, &resp); err != nil {
 		return nil, err
 	}
 
@@ -39,8 +51,13 @@ func (c *Client) ListPublicKeys(ctx context.Context) ([]*PublicKey, error) {
 }
 
 // GetPublicKey retrieves a specific public key by ID.
-func (c *Client) GetPublicKey(ctx context.Context, keyID string) (*PublicKey, error) {
-	path := fmt.Sprintf("/v1/publickeys/%s", keyID)
+// orgID must be specified - convenience endpoints have been removed.
+func (c *Client) GetPublicKey(ctx context.Context, orgID, keyID string) (*PublicKey, error) {
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
+	}
+
+	path := fmt.Sprintf("/v1/publickeys/%s/%s", orgID, keyID)
 
 	var resp struct {
 		Key *PublicKey `json:"key"`
@@ -54,7 +71,12 @@ func (c *Client) GetPublicKey(ctx context.Context, keyID string) (*PublicKey, er
 }
 
 // DeletePublicKey deletes a public key by ID.
-func (c *Client) DeletePublicKey(ctx context.Context, keyID string) error {
-	path := fmt.Sprintf("/v1/publickeys/%s", keyID)
+// orgID must be specified - convenience endpoints have been removed.
+func (c *Client) DeletePublicKey(ctx context.Context, orgID, keyID string) error {
+	if orgID == "" {
+		return fmt.Errorf("orgID is required")
+	}
+
+	path := fmt.Sprintf("/v1/publickeys/%s/%s", orgID, keyID)
 	return c.doRequest(ctx, "DELETE", path, nil, nil)
 }

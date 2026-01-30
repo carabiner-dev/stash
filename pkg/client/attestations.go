@@ -10,7 +10,7 @@ import (
 
 // UploadAttestations uploads one or more attestations to the server.
 // Returns a list of upload results, one for each attestation.
-// If orgID is empty, uses convenience endpoint with orgID from token.
+// orgID must be specified - convenience endpoints have been removed.
 func (c *Client) UploadAttestations(ctx context.Context, orgID, namespace string, attestations [][]byte) ([]*UploadResult, error) {
 	if len(attestations) == 0 {
 		return nil, fmt.Errorf("no attestations provided")
@@ -18,10 +18,8 @@ func (c *Client) UploadAttestations(ctx context.Context, orgID, namespace string
 	if len(attestations) > 100 {
 		return nil, fmt.Errorf("batch size exceeds maximum of 100")
 	}
-
-	// Validate orgID requirements
-	if orgID == "" && c.token == "" {
-		return nil, fmt.Errorf("orgID required for unauthenticated requests")
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
 	}
 
 	// Convert [][]byte to []json.RawMessage for proper JSON marshaling
@@ -40,13 +38,11 @@ func (c *Client) UploadAttestations(ctx context.Context, orgID, namespace string
 		Results []*UploadResult `json:"results"`
 	}
 
-	// Use convenience endpoint if orgID is empty and token is present
-	var path string
-	if orgID == "" {
-		path = fmt.Sprintf("/v1/attestations/%s", namespace)
-	} else {
-		path = fmt.Sprintf("/v1/attestations/%s/%s", orgID, namespace)
-	}
+	// Normalize namespace: empty string becomes "_" for URL paths
+	ns := normalizeNamespace(namespace)
+
+	// All requests use explicit orgID endpoint
+	path := fmt.Sprintf("/v1/attestations/%s/%s", orgID, ns)
 
 	if err := c.doRequest(ctx, "POST", path, req, &resp); err != nil {
 		return nil, err
@@ -57,11 +53,10 @@ func (c *Client) UploadAttestations(ctx context.Context, orgID, namespace string
 
 // GetAttestation retrieves an attestation by ID or hash.
 // Returns the attestation metadata, raw JSON, and predicate JSON.
-// If orgID is empty, uses convenience endpoint with orgID from token.
+// orgID must be specified - convenience endpoints have been removed.
 func (c *Client) GetAttestation(ctx context.Context, orgID, namespace, id string) (*Attestation, []byte, []byte, error) {
-	// Validate orgID requirements
-	if orgID == "" && c.token == "" {
-		return nil, nil, nil, fmt.Errorf("orgID required for unauthenticated requests")
+	if orgID == "" {
+		return nil, nil, nil, fmt.Errorf("orgID is required")
 	}
 
 	var result struct {
@@ -70,13 +65,11 @@ func (c *Client) GetAttestation(ctx context.Context, orgID, namespace, id string
 		Predicate   json.RawMessage `json:"predicate"`
 	}
 
-	// Use convenience endpoint if orgID is empty and token is present
-	var path string
-	if orgID == "" {
-		path = fmt.Sprintf("/v1/attestations/%s/%s", namespace, id)
-	} else {
-		path = fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, namespace, id)
-	}
+	// Normalize namespace: empty string becomes "_" for URL paths
+	ns := normalizeNamespace(namespace)
+
+	// All requests use explicit orgID endpoint
+	path := fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, ns, id)
 
 	if err := c.doRequest(ctx, "GET", path, nil, &result); err != nil {
 		return nil, nil, nil, err
@@ -86,20 +79,17 @@ func (c *Client) GetAttestation(ctx context.Context, orgID, namespace, id string
 }
 
 // GetAttestationRaw retrieves only the raw attestation JSON by ID or hash.
-// If orgID is empty, uses convenience endpoint with orgID from token.
+// orgID must be specified - convenience endpoints have been removed.
 func (c *Client) GetAttestationRaw(ctx context.Context, orgID, namespace, id string) ([]byte, error) {
-	// Validate orgID requirements
-	if orgID == "" && c.token == "" {
-		return nil, fmt.Errorf("orgID required for unauthenticated requests")
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
 	}
 
-	// Use convenience endpoint if orgID is empty and token is present
-	var path string
-	if orgID == "" {
-		path = fmt.Sprintf("/v1/attestations/%s/%s", namespace, id)
-	} else {
-		path = fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, namespace, id)
-	}
+	// Normalize namespace: empty string becomes "_" for URL paths
+	ns := normalizeNamespace(namespace)
+
+	// All requests use explicit orgID endpoint
+	path := fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, ns, id)
 
 	query := url.Values{}
 	query.Set("raw", "true")
@@ -108,20 +98,17 @@ func (c *Client) GetAttestationRaw(ctx context.Context, orgID, namespace, id str
 }
 
 // GetAttestationPredicate retrieves only the predicate JSON by ID or hash.
-// If orgID is empty, uses convenience endpoint with orgID from token.
+// orgID must be specified - convenience endpoints have been removed.
 func (c *Client) GetAttestationPredicate(ctx context.Context, orgID, namespace, id string) ([]byte, error) {
-	// Validate orgID requirements
-	if orgID == "" && c.token == "" {
-		return nil, fmt.Errorf("orgID required for unauthenticated requests")
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
 	}
 
-	// Use convenience endpoint if orgID is empty and token is present
-	var path string
-	if orgID == "" {
-		path = fmt.Sprintf("/v1/attestations/%s/%s", namespace, id)
-	} else {
-		path = fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, namespace, id)
-	}
+	// Normalize namespace: empty string becomes "_" for URL paths
+	ns := normalizeNamespace(namespace)
+
+	// All requests use explicit orgID endpoint
+	path := fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, ns, id)
 
 	query := url.Values{}
 	query.Set("predicate", "true")
@@ -140,22 +127,19 @@ func (c *Client) GetAttestationByPredicateHash(ctx context.Context, orgID, names
 }
 
 // ListAttestations lists attestations with optional filters and pagination.
-// If orgID is empty, uses convenience endpoint with orgID from token.
+// orgID must be specified - convenience endpoints have been removed.
 func (c *Client) ListAttestations(ctx context.Context, orgID, namespace string, filters *Filters, cursor *Cursor) (*AttestationList, error) {
-	// Validate orgID requirements
-	if orgID == "" && c.token == "" {
-		return nil, fmt.Errorf("orgID required for unauthenticated requests")
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
 	}
 
 	query := filters.toQueryParams(cursor)
 
-	// Use convenience endpoint if orgID is empty and token is present
-	var path string
-	if orgID == "" {
-		path = fmt.Sprintf("/v1/attestations/%s", namespace)
-	} else {
-		path = fmt.Sprintf("/v1/attestations/%s/%s", orgID, namespace)
-	}
+	// Normalize namespace: empty string becomes "_" for URL paths
+	ns := normalizeNamespace(namespace)
+
+	// All requests use explicit orgID endpoint
+	path := fmt.Sprintf("/v1/attestations/%s/%s", orgID, ns)
 
 	body, err := c.doRequestRaw(ctx, "GET", path, query)
 	if err != nil {
@@ -171,39 +155,35 @@ func (c *Client) ListAttestations(ctx context.Context, orgID, namespace string, 
 }
 
 // DeleteAttestation deletes an attestation by ID or hash.
-// If orgID is empty, uses convenience endpoint with orgID from token.
+// orgID must be specified - convenience endpoints have been removed.
 func (c *Client) DeleteAttestation(ctx context.Context, orgID, namespace, id string) error {
 	// Validate orgID requirements
 	if orgID == "" && c.token == "" {
 		return fmt.Errorf("orgID required for unauthenticated requests")
 	}
 
-	// Use convenience endpoint if orgID is empty and token is present
-	var path string
-	if orgID == "" {
-		path = fmt.Sprintf("/v1/attestations/%s/%s", namespace, id)
-	} else {
-		path = fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, namespace, id)
-	}
+	// Normalize namespace: empty string becomes "_" for URL paths
+	ns := normalizeNamespace(namespace)
+
+	// All requests use explicit orgID endpoint
+	path := fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, ns, id)
 
 	return c.doRequest(ctx, "DELETE", path, nil, nil)
 }
 
 // UpdateAttestation updates an attestation (currently returns NOT_IMPLEMENTED).
-// If orgID is empty, uses convenience endpoint with orgID from token.
+// orgID must be specified - convenience endpoints have been removed.
 func (c *Client) UpdateAttestation(ctx context.Context, orgID, namespace, id string, updates map[string]interface{}) error {
 	// Validate orgID requirements
 	if orgID == "" && c.token == "" {
 		return fmt.Errorf("orgID required for unauthenticated requests")
 	}
 
-	// Use convenience endpoint if orgID is empty and token is present
-	var path string
-	if orgID == "" {
-		path = fmt.Sprintf("/v1/attestations/%s/%s", namespace, id)
-	} else {
-		path = fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, namespace, id)
-	}
+	// Normalize namespace: empty string becomes "_" for URL paths
+	ns := normalizeNamespace(namespace)
+
+	// All requests use explicit orgID endpoint
+	path := fmt.Sprintf("/v1/attestations/%s/%s/%s", orgID, ns, id)
 
 	return c.doRequest(ctx, "PUT", path, updates, nil)
 }

@@ -272,7 +272,9 @@ func (c *GRPCClient) UpdateAttestation(ctx context.Context, orgID, namespace, id
 }
 
 // UploadPublicKey uploads a public key.
-func (c *GRPCClient) UploadPublicKey(ctx context.Context, keyData []byte) (string, error) {
+func (c *GRPCClient) UploadPublicKey(ctx context.Context, orgID string, keyData []byte) (string, error) {
+	// orgID is sent via context metadata in GRPC, parameter kept for interface compatibility
+	_ = orgID
 	resp, err := c.client.UploadPublicKey(c.ctxWithAuth(ctx), &stashv1.UploadPublicKeyRequest{
 		KeyData: keyData,
 	})
@@ -283,7 +285,9 @@ func (c *GRPCClient) UploadPublicKey(ctx context.Context, keyData []byte) (strin
 }
 
 // ListPublicKeys lists all public keys.
-func (c *GRPCClient) ListPublicKeys(ctx context.Context) ([]*PublicKey, error) {
+func (c *GRPCClient) ListPublicKeys(ctx context.Context, orgID string) ([]*PublicKey, error) {
+	// orgID is sent via context metadata in GRPC, parameter kept for interface compatibility
+	_ = orgID
 	resp, err := c.client.ListPublicKeys(c.ctxWithAuth(ctx), &stashv1.ListPublicKeysRequest{})
 	if err != nil {
 		return nil, err
@@ -302,8 +306,8 @@ func (c *GRPCClient) ListPublicKeys(ctx context.Context) ([]*PublicKey, error) {
 }
 
 // GetPublicKey retrieves a public key by ID (not in proto, uses list and filter).
-func (c *GRPCClient) GetPublicKey(ctx context.Context, keyID string) (*PublicKey, error) {
-	keys, err := c.ListPublicKeys(ctx)
+func (c *GRPCClient) GetPublicKey(ctx context.Context, orgID, keyID string) (*PublicKey, error) {
+	keys, err := c.ListPublicKeys(ctx, orgID)
 	if err != nil {
 		return nil, err
 	}
@@ -316,7 +320,9 @@ func (c *GRPCClient) GetPublicKey(ctx context.Context, keyID string) (*PublicKey
 }
 
 // DeletePublicKey deletes a public key.
-func (c *GRPCClient) DeletePublicKey(ctx context.Context, keyID string) error {
+func (c *GRPCClient) DeletePublicKey(ctx context.Context, orgID, keyID string) error {
+	// orgID is sent via context metadata in GRPC, parameter kept for interface compatibility
+	_ = orgID
 	_, err := c.client.DeletePublicKey(c.ctxWithAuth(ctx), &stashv1.DeletePublicKeyRequest{
 		KeyId: keyID,
 	})
