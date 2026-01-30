@@ -46,13 +46,12 @@ func NewClientFromEnv() (*Client, error) {
 	return NewClientFromConfig(cfg), nil
 }
 
-// normalizeNamespace converts empty namespace to underscore for URL paths.
-// The underscore "_" is the standard representation of the default/empty namespace in URLs,
-// matching the resource URL format in JWT tokens.
+// normalizeNamespace handles empty namespace for URL paths.
+// Empty namespace means the default namespace - we can omit it from the URL path.
+// The server accepts both /v1/attestations/{orgID} and /v1/attestations/{orgID}/_
 func normalizeNamespace(namespace string) string {
-	if namespace == "" {
-		return "_"
-	}
+	// Empty string stays empty - will be omitted from URL
+	// Underscore and other values stay as-is
 	return namespace
 }
 

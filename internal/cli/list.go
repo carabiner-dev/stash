@@ -17,6 +17,7 @@ var _ command.OptionsSet = (*ListOptions)(nil)
 
 // ListOptions
 type ListOptions struct {
+	Namespace        string
 	PredicateType    string
 	SubjectName      string
 	SubjectURI       string
@@ -33,6 +34,7 @@ type ListOptions struct {
 
 // defaultListOptions
 var defaultListOptions = &ListOptions{
+	Namespace:        "",
 	PredicateType:    "",
 	SubjectName:      "",
 	SubjectURI:       "",
@@ -56,6 +58,7 @@ func (lo *ListOptions) Config() *command.OptionsSetConfig {
 }
 
 func (lo *ListOptions) AddFlags(cmd *cobra.Command) {
+	cmd.Flags().StringVarP(&lo.Namespace, "namespace", "n", "", "Namespace to list from (default: empty)")
 	cmd.Flags().StringVar(&lo.PredicateType, "predicate-type", "", "Filter by predicate type")
 	cmd.Flags().StringVar(&lo.SubjectName, "subject.name", "", "Filter by exact subject name")
 	cmd.Flags().StringVar(&lo.SubjectURI, "subject.uri", "", "Filter by exact subject URI")
@@ -107,6 +110,12 @@ Examples:
 				return err
 			}
 
+			// Get organization ID
+			orgID, err := getOrgID()
+			if err != nil {
+				return err
+			}
+
 			// Get client
 			c, cleanup, err := getClient()
 			if err != nil {
@@ -133,7 +142,7 @@ Examples:
 			}
 
 			// List attestations
-			result, err := c.ListAttestations(cmd.Context(), "", "", filters, cursor)
+			result, err := c.ListAttestations(cmd.Context(), orgID, opts.Namespace, filters, cursor)
 			if err != nil {
 				return fmt.Errorf("listing attestations: %w", err)
 			}
@@ -190,6 +199,6 @@ Examples:
 		},
 	}
 
-	opts.AddFlags(parent)
+	opts.AddFlags(cmd)
 	parent.AddCommand(cmd)
 }

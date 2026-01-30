@@ -38,11 +38,17 @@ func (c *Client) UploadAttestations(ctx context.Context, orgID, namespace string
 		Results []*UploadResult `json:"results"`
 	}
 
-	// Normalize namespace: empty string becomes "_" for URL paths
+	// Normalize namespace: empty string means default namespace
 	ns := normalizeNamespace(namespace)
 
 	// All requests use explicit orgID endpoint
-	path := fmt.Sprintf("/v1/attestations/%s/%s", orgID, ns)
+	// If namespace is empty, omit it from URL (uses default namespace)
+	var path string
+	if ns == "" {
+		path = fmt.Sprintf("/v1/attestations/%s", orgID)
+	} else {
+		path = fmt.Sprintf("/v1/attestations/%s/%s", orgID, ns)
+	}
 
 	if err := c.doRequest(ctx, "POST", path, req, &resp); err != nil {
 		return nil, err
@@ -135,11 +141,17 @@ func (c *Client) ListAttestations(ctx context.Context, orgID, namespace string, 
 
 	query := filters.toQueryParams(cursor)
 
-	// Normalize namespace: empty string becomes "_" for URL paths
+	// Normalize namespace: empty string means default namespace
 	ns := normalizeNamespace(namespace)
 
 	// All requests use explicit orgID endpoint
-	path := fmt.Sprintf("/v1/attestations/%s/%s", orgID, ns)
+	// If namespace is empty, omit it from URL (uses default namespace)
+	var path string
+	if ns == "" {
+		path = fmt.Sprintf("/v1/attestations/%s", orgID)
+	} else {
+		path = fmt.Sprintf("/v1/attestations/%s/%s", orgID, ns)
+	}
 
 	body, err := c.doRequestRaw(ctx, "GET", path, query)
 	if err != nil {

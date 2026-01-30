@@ -115,6 +115,12 @@ Examples:
 
 			keyPath := args[0]
 
+			// Get organization ID
+			orgID, err := getOrgID()
+			if err != nil {
+				return err
+			}
+
 			// Get client
 			c, cleanup, err := getClient()
 			if err != nil {
@@ -134,8 +140,8 @@ Examples:
 			}
 
 			// Upload key
-			fmt.Printf("Uploading public key...\n")
-			keyID, err := c.UploadPublicKey(cmd.Context(), keyData)
+			fmt.Printf("Uploading public key to org %s...\n", orgID)
+			keyID, err := c.UploadPublicKey(cmd.Context(), orgID, keyData)
 			if err != nil {
 				return fmt.Errorf("uploading public key: %w", err)
 			}
@@ -170,6 +176,12 @@ Examples:
 				return err
 			}
 
+			// Get organization ID
+			orgID, err := getOrgID()
+			if err != nil {
+				return err
+			}
+
 			// Get client
 			c, cleanup, err := getClient()
 			if err != nil {
@@ -178,7 +190,7 @@ Examples:
 			defer cleanup()
 
 			// List keys
-			keys, err := c.ListPublicKeys(cmd.Context())
+			keys, err := c.ListPublicKeys(cmd.Context(), orgID)
 			if err != nil {
 				return fmt.Errorf("listing public keys: %w", err)
 			}
@@ -235,6 +247,12 @@ Examples:
 
 			keyID := args[0]
 
+			// Get organization ID
+			orgID, err := getOrgID()
+			if err != nil {
+				return err
+			}
+
 			// Get client
 			c, cleanup, err := getClient()
 			if err != nil {
@@ -243,8 +261,8 @@ Examples:
 			defer cleanup()
 
 			// Delete key
-			fmt.Printf("Deleting public key %s...\n", keyID)
-			if err := c.DeletePublicKey(cmd.Context(), keyID); err != nil {
+			fmt.Printf("Deleting public key %s from org %s...\n", keyID, orgID)
+			if err := c.DeletePublicKey(cmd.Context(), orgID, keyID); err != nil {
 				return fmt.Errorf("deleting public key: %w", err)
 			}
 

@@ -9,9 +9,9 @@ func TestNormalizeNamespace(t *testing.T) {
 		want      string
 	}{
 		{
-			name:      "empty namespace converts to underscore",
+			name:      "empty namespace stays empty",
 			namespace: "",
-			want:      "_",
+			want:      "",
 		},
 		{
 			name:      "named namespace stays as-is",

@@ -58,6 +58,12 @@ Examples:
 				return err
 			}
 
+			// Get organization ID
+			orgID, err := getOrgID()
+			if err != nil {
+				return err
+			}
+
 			// Get client
 			c, cleanup, err := getClient()
 			if err != nil {
@@ -91,9 +97,8 @@ Examples:
 			}
 
 			// Push attestations
-			fmt.Printf("Pushing %d attestation(s) to namespace %q...\n", len(attestations), opts.Namespace)
-			// Use empty orgID to leverage convenience endpoint (orgID from token)
-			results, err := c.UploadAttestations(cmd.Context(), "", opts.Namespace, attestations)
+			fmt.Printf("Pushing %d attestation(s) to org %s namespace %q...\n", len(attestations), orgID, opts.Namespace)
+			results, err := c.UploadAttestations(cmd.Context(), orgID, opts.Namespace, attestations)
 			if err != nil {
 				return fmt.Errorf("pushing attestations: %w", err)
 			}
