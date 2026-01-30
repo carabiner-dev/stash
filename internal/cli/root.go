@@ -23,7 +23,7 @@ var (
 
 // Global flags
 var (
-	flagURL      string
+	flagServer   string
 	flagToken    string
 	flagOrg      string
 	flagUseREST  bool
@@ -44,7 +44,7 @@ By default, the client uses gRPC for communication. Use --rest to fall back to R
 	}
 
 	// Global flags
-	rootCmd.PersistentFlags().StringVar(&flagURL, "url", "", "Stash server URL (default from STASH_URL or localhost:8080)")
+	rootCmd.PersistentFlags().StringVar(&flagServer, "server", "", "Stash server URL (default from STASH_URL or localhost:8080)")
 	rootCmd.PersistentFlags().StringVar(&flagToken, "token", "", "Authentication token (default from STASH_TOKEN or ~/.stash/token)")
 	rootCmd.PersistentFlags().StringVar(&flagOrg, "org", "", "Organization ID (default from STASH_ORG)")
 	rootCmd.PersistentFlags().BoolVar(&flagUseREST, "rest", false, "Use REST API instead of gRPC")
@@ -80,8 +80,8 @@ func getClient() (client.StashClient, func(), error) {
 	}
 
 	// Override with flags if provided
-	if flagURL != "" {
-		cfg.BaseURL = flagURL
+	if flagServer != "" {
+		cfg.BaseURL = flagServer
 	}
 	if flagToken != "" {
 		cfg.Token = flagToken
