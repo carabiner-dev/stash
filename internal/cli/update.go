@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/carabiner-dev/command"
@@ -13,22 +14,30 @@ import (
 var _ command.OptionsSet = (*UpdateOptions)(nil)
 
 // UpdateOptions holds the options for the update command.
-type UpdateOptions struct{}
+type UpdateOptions struct {
+	ClientOptions
+}
 
-var defaultUpdateOptions = &UpdateOptions{}
+var defaultUpdateOptions = UpdateOptions{
+	ClientOptions: defaultClientOptions,
+}
 
 func (o *UpdateOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *UpdateOptions) Config() *command.OptionsSetConfig {
 	return nil
 }
 
-func (o *UpdateOptions) AddFlags(cmd *cobra.Command) {}
+func (o *UpdateOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+}
 
-// AddUpdateCommand adds the update command to the parent.
-func AddUpdateCommand(parent *cobra.Command) {
+// AddUpdate adds the update command to the parent.
+func AddUpdate(parent *cobra.Command) {
 	opts := defaultUpdateOptions
 	cmd := &cobra.Command{
 		Use:   "update <attestation-id>",
@@ -41,15 +50,20 @@ Examples:
   # Attempt to update an attestation
   stash update abc123`,
 		Args: cobra.ExactArgs(1),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
+			id := args[0]
+
+			// Get organization ID
+			orgID, err := opts.GetOrg()
+			if err != nil {
 				return err
 			}
 
-			id := args[0]
-
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -57,7 +71,7 @@ Examples:
 
 			// Attempt update (will return NOT_IMPLEMENTED)
 			updates := map[string]interface{}{}
-			if err := c.UpdateAttestation(cmd.Context(), "", "", id, updates); err != nil {
+			if err := c.UpdateAttestation(cmd.Context(), orgID, "", id, updates); err != nil {
 				return fmt.Errorf("updating attestation: %w", err)
 			}
 

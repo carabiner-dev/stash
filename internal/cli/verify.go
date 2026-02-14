@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/carabiner-dev/command"
@@ -13,22 +14,30 @@ import (
 var _ command.OptionsSet = (*VerifyOptions)(nil)
 
 // VerifyOptions holds the options for the verify command.
-type VerifyOptions struct{}
+type VerifyOptions struct {
+	ClientOptions
+}
 
-var defaultVerifyOptions = &VerifyOptions{}
+var defaultVerifyOptions = VerifyOptions{
+	ClientOptions: defaultClientOptions,
+}
 
 func (o *VerifyOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *VerifyOptions) Config() *command.OptionsSetConfig {
 	return nil
 }
 
-func (o *VerifyOptions) AddFlags(cmd *cobra.Command) {}
+func (o *VerifyOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+}
 
-// AddVerifyCommand adds the verify command to the parent.
-func AddVerifyCommand(parent *cobra.Command) {
+// AddVerify adds the verify command to the parent.
+func AddVerify(parent *cobra.Command) {
 	opts := defaultVerifyOptions
 	cmd := &cobra.Command{
 		Use:   "verify <attestation-id|hash>",
@@ -45,15 +54,20 @@ Examples:
   # Verify by hash
   stash verify sha256:a1b2c3...`,
 		Args: cobra.ExactArgs(1),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
+			id := args[0]
+
+			// Get organization ID
+			orgID, err := opts.GetOrg()
+			if err != nil {
 				return err
 			}
 
-			id := args[0]
-
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -61,7 +75,7 @@ Examples:
 
 			// Get attestation
 			fmt.Printf("Retrieving attestation %s...\n", id)
-			attestation, _, _, err := c.GetAttestation(cmd.Context(), "", "", id)
+			attestation, _, _, err := c.GetAttestation(cmd.Context(), orgID, "", id)
 			if err != nil {
 				return fmt.Errorf("retrieving attestation: %w", err)
 			}

@@ -5,6 +5,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 
 	"github.com/carabiner-dev/command"
@@ -15,17 +16,21 @@ var _ command.OptionsSet = (*GetOptions)(nil)
 
 // GetOptions holds the options for the get command.
 type GetOptions struct {
+	ClientOptions
 	Raw       bool
 	Predicate bool
 }
 
-var defaultGetOptions = &GetOptions{
-	Raw:       false,
-	Predicate: false,
+var defaultGetOptions = GetOptions{
+	ClientOptions: defaultClientOptions,
+	Raw:           false,
+	Predicate:     false,
 }
 
 func (o *GetOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *GetOptions) Config() *command.OptionsSetConfig {
@@ -33,12 +38,13 @@ func (o *GetOptions) Config() *command.OptionsSetConfig {
 }
 
 func (o *GetOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
 	cmd.Flags().BoolVar(&o.Raw, "raw", false, "Return only raw attestation JSON")
 	cmd.Flags().BoolVar(&o.Predicate, "predicate", false, "Return only predicate JSON")
 }
 
-// AddGetCommand adds the get command to the parent.
-func AddGetCommand(parent *cobra.Command) {
+// AddGet adds the get command to the parent.
+func AddGet(parent *cobra.Command) {
 	opts := defaultGetOptions
 	cmd := &cobra.Command{
 		Use:   "get <attestation-id|hash>",
@@ -65,15 +71,20 @@ Examples:
   # Get by predicate hash
   stash get predicate:sha256:d4e5f6...`,
 		Args: cobra.ExactArgs(1),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
+			id := args[0]
+
+			// Get organization ID
+			orgID, err := opts.GetOrg()
+			if err != nil {
 				return err
 			}
 
-			id := args[0]
-
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -81,7 +92,7 @@ Examples:
 
 			// Handle --raw flag
 			if opts.Raw {
-				data, err := c.GetAttestationRaw(cmd.Context(), "", "", id)
+				data, err := c.GetAttestationRaw(cmd.Context(), orgID, "", id)
 				if err != nil {
 					return fmt.Errorf("getting attestation: %w", err)
 				}
@@ -91,7 +102,7 @@ Examples:
 
 			// Handle --predicate flag
 			if opts.Predicate {
-				data, err := c.GetAttestationPredicate(cmd.Context(), "", "", id)
+				data, err := c.GetAttestationPredicate(cmd.Context(), orgID, "", id)
 				if err != nil {
 					return fmt.Errorf("getting predicate: %w", err)
 				}
@@ -100,7 +111,7 @@ Examples:
 			}
 
 			// Get full attestation
-			attestation, raw, predicate, err := c.GetAttestation(cmd.Context(), "", "", id)
+			attestation, raw, predicate, err := c.GetAttestation(cmd.Context(), orgID, "", id)
 			if err != nil {
 				return fmt.Errorf("getting attestation: %w", err)
 			}

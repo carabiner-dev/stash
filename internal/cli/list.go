@@ -5,6 +5,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -16,8 +17,9 @@ import (
 
 var _ command.OptionsSet = (*ListOptions)(nil)
 
-// ListOptions
+// ListOptions holds the options for the list command.
 type ListOptions struct {
+	ClientOptions
 	Namespace        string
 	PredicateType    string
 	SubjectName      string
@@ -33,8 +35,8 @@ type ListOptions struct {
 	JSON             bool
 }
 
-// defaultListOptions
-var defaultListOptions = &ListOptions{
+var defaultListOptions = ListOptions{
+	ClientOptions:    defaultClientOptions,
 	Namespace:        "",
 	PredicateType:    "",
 	SubjectName:      "",
@@ -49,7 +51,9 @@ var defaultListOptions = &ListOptions{
 }
 
 func (lo *ListOptions) Validate() error {
-	return nil
+	return errors.Join(
+		lo.ClientOptions.Validate(),
+	)
 }
 
 func (lo *ListOptions) Config() *command.OptionsSetConfig {
@@ -57,6 +61,7 @@ func (lo *ListOptions) Config() *command.OptionsSetConfig {
 }
 
 func (lo *ListOptions) AddFlags(cmd *cobra.Command) {
+	lo.ClientOptions.AddFlags(cmd)
 	cmd.Flags().StringVarP(&lo.Namespace, "namespace", "n", "", "Namespace to list from (default: empty)")
 	cmd.Flags().StringVar(&lo.PredicateType, "predicate-type", "", "Filter by predicate type")
 	cmd.Flags().StringVar(&lo.SubjectName, "subject.name", "", "Filter by exact subject name")
@@ -72,8 +77,8 @@ func (lo *ListOptions) AddFlags(cmd *cobra.Command) {
 	cmd.Flags().BoolVar(&lo.JSON, "json", false, "Output as JSON")
 }
 
-// NewListCommand creates the list command.
-func AddListCommand(parent *cobra.Command) {
+// AddList adds the list command to the parent.
+func AddList(parent *cobra.Command) {
 	opts := defaultListOptions
 	cmd := &cobra.Command{
 		Use:   "list",
@@ -110,19 +115,18 @@ Examples:
 
   # Output as JSON
   stash list --json`,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
-				return err
-			}
-
 			// Get organization ID
-			orgID, err := getOrgID()
+			orgID, err := opts.GetOrg()
 			if err != nil {
 				return err
 			}
 
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}

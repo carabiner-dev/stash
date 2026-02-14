@@ -5,6 +5,7 @@ package cli
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 
@@ -12,40 +13,48 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// PublicKeyUploadOptions
-
+// PublicKeyUploadOptions holds the options for the publickey upload command.
 var _ command.OptionsSet = (*PublicKeyUploadOptions)(nil)
 
-// PublicKeyUploadOptions holds the options for the publickey upload command.
-type PublicKeyUploadOptions struct{}
+type PublicKeyUploadOptions struct {
+	ClientOptions
+}
 
-var defaultPublicKeyUploadOptions = &PublicKeyUploadOptions{}
+var defaultPublicKeyUploadOptions = PublicKeyUploadOptions{
+	ClientOptions: defaultClientOptions,
+}
 
 func (o *PublicKeyUploadOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *PublicKeyUploadOptions) Config() *command.OptionsSetConfig {
 	return nil
 }
 
-func (o *PublicKeyUploadOptions) AddFlags(cmd *cobra.Command) {}
-
-// PublicKeyListOptions
-
-var _ command.OptionsSet = (*PublicKeyListOptions)(nil)
+func (o *PublicKeyUploadOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+}
 
 // PublicKeyListOptions holds the options for the publickey list command.
+var _ command.OptionsSet = (*PublicKeyListOptions)(nil)
+
 type PublicKeyListOptions struct {
+	ClientOptions
 	JSON bool
 }
 
-var defaultPublicKeyListOptions = &PublicKeyListOptions{
-	JSON: false,
+var defaultPublicKeyListOptions = PublicKeyListOptions{
+	ClientOptions: defaultClientOptions,
+	JSON:          false,
 }
 
 func (o *PublicKeyListOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *PublicKeyListOptions) Config() *command.OptionsSetConfig {
@@ -53,30 +62,37 @@ func (o *PublicKeyListOptions) Config() *command.OptionsSetConfig {
 }
 
 func (o *PublicKeyListOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
 	cmd.Flags().BoolVar(&o.JSON, "json", false, "Output as JSON")
 }
 
-// PublicKeyDeleteOptions
-
+// PublicKeyDeleteOptions holds the options for the publickey delete command.
 var _ command.OptionsSet = (*PublicKeyDeleteOptions)(nil)
 
-// PublicKeyDeleteOptions holds the options for the publickey delete command.
-type PublicKeyDeleteOptions struct{}
+type PublicKeyDeleteOptions struct {
+	ClientOptions
+}
 
-var defaultPublicKeyDeleteOptions = &PublicKeyDeleteOptions{}
+var defaultPublicKeyDeleteOptions = PublicKeyDeleteOptions{
+	ClientOptions: defaultClientOptions,
+}
 
 func (o *PublicKeyDeleteOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *PublicKeyDeleteOptions) Config() *command.OptionsSetConfig {
 	return nil
 }
 
-func (o *PublicKeyDeleteOptions) AddFlags(cmd *cobra.Command) {}
+func (o *PublicKeyDeleteOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+}
 
-// AddPublicKeyCommand adds the publickey command and its subcommands to the parent.
-func AddPublicKeyCommand(parent *cobra.Command) {
+// AddPublicKey adds the publickey command and its subcommands to the parent.
+func AddPublicKey(parent *cobra.Command) {
 	cmd := &cobra.Command{
 		Use:     "publickey",
 		Aliases: []string{"key", "pk"},
@@ -108,21 +124,20 @@ Examples:
   # Upload from stdin
   cat key.pem | stash publickey upload -`,
 		Args: cobra.ExactArgs(1),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
-				return err
-			}
-
 			keyPath := args[0]
 
 			// Get organization ID
-			orgID, err := getOrgID()
+			orgID, err := opts.GetOrg()
 			if err != nil {
 				return err
 			}
 
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -171,19 +186,18 @@ Examples:
 
   # List as JSON
   stash publickey list --json`,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
-				return err
-			}
-
 			// Get organization ID
-			orgID, err := getOrgID()
+			orgID, err := opts.GetOrg()
 			if err != nil {
 				return err
 			}
 
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -240,21 +254,20 @@ Examples:
   # Delete a public key
   stash publickey delete abc123`,
 		Args: cobra.ExactArgs(1),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
-				return err
-			}
-
 			keyID := args[0]
 
 			// Get organization ID
-			orgID, err := getOrgID()
+			orgID, err := opts.GetOrg()
 			if err != nil {
 				return err
 			}
 
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}

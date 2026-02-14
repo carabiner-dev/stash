@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/carabiner-dev/command"
@@ -13,22 +14,30 @@ import (
 var _ command.OptionsSet = (*DeleteOptions)(nil)
 
 // DeleteOptions holds the options for the delete command.
-type DeleteOptions struct{}
+type DeleteOptions struct {
+	ClientOptions
+}
 
-var defaultDeleteOptions = &DeleteOptions{}
+var defaultDeleteOptions = DeleteOptions{
+	ClientOptions: defaultClientOptions,
+}
 
 func (o *DeleteOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *DeleteOptions) Config() *command.OptionsSetConfig {
 	return nil
 }
 
-func (o *DeleteOptions) AddFlags(cmd *cobra.Command) {}
+func (o *DeleteOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+}
 
-// AddDeleteCommand adds the delete command to the parent.
-func AddDeleteCommand(parent *cobra.Command) {
+// AddDelete adds the delete command to the parent.
+func AddDelete(parent *cobra.Command) {
 	opts := defaultDeleteOptions
 	cmd := &cobra.Command{
 		Use:   "delete <attestation-id|hash>",
@@ -44,15 +53,20 @@ Examples:
   # Delete by content hash
   stash delete sha256:a1b2c3...`,
 		Args: cobra.ExactArgs(1),
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
+			id := args[0]
+
+			// Get organization ID
+			orgID, err := opts.GetOrg()
+			if err != nil {
 				return err
 			}
 
-			id := args[0]
-
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -60,7 +74,7 @@ Examples:
 
 			// Delete attestation
 			fmt.Printf("Deleting attestation %s...\n", id)
-			if err := c.DeleteAttestation(cmd.Context(), "", "", id); err != nil {
+			if err := c.DeleteAttestation(cmd.Context(), orgID, "", id); err != nil {
 				return fmt.Errorf("deleting attestation: %w", err)
 			}
 

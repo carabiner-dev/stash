@@ -4,6 +4,7 @@
 package cli
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -16,17 +17,21 @@ var _ command.OptionsSet = (*PushOptions)(nil)
 
 // PushOptions holds the options for the push command.
 type PushOptions struct {
+	ClientOptions
 	Stdin     bool
 	Namespace string
 }
 
-var defaultPushOptions = &PushOptions{
-	Stdin:     false,
-	Namespace: "",
+var defaultPushOptions = PushOptions{
+	ClientOptions: defaultClientOptions,
+	Stdin:         false,
+	Namespace:     "",
 }
 
 func (o *PushOptions) Validate() error {
-	return nil
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
 }
 
 func (o *PushOptions) Config() *command.OptionsSetConfig {
@@ -34,13 +39,15 @@ func (o *PushOptions) Config() *command.OptionsSetConfig {
 }
 
 func (o *PushOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
 	cmd.Flags().BoolVar(&o.Stdin, "stdin", false, "Read attestation from stdin")
 	cmd.Flags().StringVarP(&o.Namespace, "namespace", "n", "", "Namespace for attestations (default: empty)")
 }
 
-// AddPushCommand adds the push command to the parent.
-func AddPushCommand(parent *cobra.Command) {
+// AddPush adds the push command to the parent.
+func AddPush(parent *cobra.Command) {
 	opts := defaultPushOptions
+
 	cmd := &cobra.Command{
 		Use:   "push [file...]",
 		Short: "Push attestations to Stash",
@@ -53,19 +60,18 @@ Examples:
   # Push from stdin
   stash push --stdin < attestation.json
   cat attestation.json | stash push --stdin`,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
 		RunE: func(cmd *cobra.Command, args []string) error {
-			if err := opts.Validate(); err != nil {
-				return err
-			}
-
 			// Get organization ID
-			orgID, err := getOrgID()
+			orgID, err := opts.GetOrg()
 			if err != nil {
 				return err
 			}
 
 			// Get client
-			c, cleanup, err := getClient()
+			c, cleanup, err := opts.NewClient()
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
