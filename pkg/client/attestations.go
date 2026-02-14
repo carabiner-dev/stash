@@ -169,9 +169,8 @@ func (c *Client) ListAttestations(ctx context.Context, orgID, namespace string, 
 // DeleteAttestation deletes an attestation by ID or hash.
 // orgID must be specified - convenience endpoints have been removed.
 func (c *Client) DeleteAttestation(ctx context.Context, orgID, namespace, id string) error {
-	// Validate orgID requirements
-	if orgID == "" && c.token == "" {
-		return fmt.Errorf("orgID required for unauthenticated requests")
+	if orgID == "" {
+		return fmt.Errorf("orgID is required")
 	}
 
 	// Normalize namespace: empty string becomes "_" for URL paths
@@ -186,9 +185,8 @@ func (c *Client) DeleteAttestation(ctx context.Context, orgID, namespace, id str
 // UpdateAttestation updates an attestation (currently returns NOT_IMPLEMENTED).
 // orgID must be specified - convenience endpoints have been removed.
 func (c *Client) UpdateAttestation(ctx context.Context, orgID, namespace, id string, updates map[string]interface{}) error {
-	// Validate orgID requirements
-	if orgID == "" && c.token == "" {
-		return fmt.Errorf("orgID required for unauthenticated requests")
+	if orgID == "" {
+		return fmt.Errorf("orgID is required")
 	}
 
 	// Normalize namespace: empty string becomes "_" for URL paths

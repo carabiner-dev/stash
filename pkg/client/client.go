@@ -16,16 +16,20 @@ import (
 
 // Client is the Stash API client.
 type Client struct {
-	baseURL    string
-	token      string
+	config     *config.Config
 	httpClient *http.Client
 }
 
 // NewClient creates a new Stash client with the given base URL and token.
+// Deprecated: Use NewClientFromConfig for better token management.
 func NewClient(baseURL, token string) *Client {
+	cfg := &config.Config{
+		BaseURL:               baseURL,
+		Token:                 token,
+		UseCredentialsManager: false, // Static token mode
+	}
 	return &Client{
-		baseURL: baseURL,
-		token:   token,
+		config: cfg,
 		httpClient: &http.Client{
 			Timeout: 30 * time.Second,
 		},
@@ -34,7 +38,12 @@ func NewClient(baseURL, token string) *Client {
 
 // NewClientFromConfig creates a new client from configuration.
 func NewClientFromConfig(cfg *config.Config) *Client {
-	return NewClient(cfg.BaseURL, cfg.Token)
+	return &Client{
+		config: cfg,
+		httpClient: &http.Client{
+			Timeout: 30 * time.Second,
+		},
+	}
 }
 
 // NewClientFromEnv creates a new client from environment variables.
@@ -44,6 +53,14 @@ func NewClientFromEnv() (*Client, error) {
 		return nil, err
 	}
 	return NewClientFromConfig(cfg), nil
+}
+
+// Close closes the client and its credentials manager if active.
+func (c *Client) Close() error {
+	if c.config != nil {
+		return c.config.Close()
+	}
+	return nil
 }
 
 // normalizeNamespace handles empty namespace for URL paths.
@@ -66,7 +83,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 		bodyReader = bytes.NewReader(data)
 	}
 
-	reqURL, err := url.JoinPath(c.baseURL, path)
+	reqURL, err := url.JoinPath(c.config.BaseURL, path)
 	if err != nil {
 		return fmt.Errorf("building request URL: %w", err)
 	}
@@ -76,8 +93,14 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 		return fmt.Errorf("creating request: %w", err)
 	}
 
-	if c.token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.token)
+	// Get token (either static or from credentials manager)
+	token, err := c.config.GetToken(ctx)
+	if err != nil {
+		return fmt.Errorf("getting authentication token: %w", err)
+	}
+
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
 	}
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
@@ -116,7 +139,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 
 // doRequestRaw performs an HTTP request and returns the raw response body.
 func (c *Client) doRequestRaw(ctx context.Context, method, path string, query url.Values) ([]byte, error) {
-	reqURL, err := url.JoinPath(c.baseURL, path)
+	reqURL, err := url.JoinPath(c.config.BaseURL, path)
 	if err != nil {
 		return nil, fmt.Errorf("building request URL: %w", err)
 	}
@@ -132,8 +155,14 @@ func (c *Client) doRequestRaw(ctx context.Context, method, path string, query ur
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
-	if c.token != "" {
-		req.Header.Set("Authorization", "Bearer "+c.token)
+	// Get token (either static or from credentials manager)
+	token, err := c.config.GetToken(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("getting authentication token: %w", err)
+	}
+
+	if token != "" {
+		req.Header.Set("Authorization", "Bearer "+token)
 	}
 
 	resp, err := c.httpClient.Do(req)

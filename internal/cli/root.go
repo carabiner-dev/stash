@@ -5,6 +5,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"os"
 
@@ -23,11 +24,12 @@ var (
 
 // Global flags
 var (
-	flagServer   string
-	flagToken    string
-	flagOrg      string
-	flagUseREST  bool
-	flagInsecure bool
+	flagServer     string
+	flagAuthServer string
+	flagToken      string
+	flagOrg        string
+	flagUseREST    bool
+	flagInsecure   bool
 )
 
 // Execute runs the root command.
@@ -44,8 +46,9 @@ By default, the client uses gRPC for communication. Use --rest to fall back to R
 	}
 
 	// Global flags
-	rootCmd.PersistentFlags().StringVar(&flagServer, "server", "", "Stash server URL (default from STASH_URL or localhost:8080)")
-	rootCmd.PersistentFlags().StringVar(&flagToken, "token", "", "Authentication token (default from STASH_TOKEN or ~/.stash/token)")
+	rootCmd.PersistentFlags().StringVar(&flagServer, "server", "", "Stash server URL https://stash.carabiner.dev")
+	rootCmd.PersistentFlags().StringVar(&flagAuthServer, "auth-server", "", "Auth server URL for token exchange (default: https://auth.carabiner.dev)")
+	rootCmd.PersistentFlags().StringVar(&flagToken, "token", "", "Override: explicit authentication token (disables automatic token management)")
 	rootCmd.PersistentFlags().StringVar(&flagOrg, "org", "", "Organization ID (default from STASH_ORG)")
 	rootCmd.PersistentFlags().BoolVar(&flagUseREST, "rest", false, "Use REST API instead of gRPC")
 	rootCmd.PersistentFlags().BoolVar(&flagInsecure, "insecure", false, "Disable TLS for gRPC connections (for development)")
@@ -69,27 +72,39 @@ func getClient() (client.StashClient, func(), error) {
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
-		// Check if it's just missing token - allow for dev mode without auth
-		if os.Getenv("STASH_TOKEN") == "" {
-			// Use default config without token for dev mode
-			cfg = config.DefaultConfig()
-			cfg.Token = ""
-		} else {
-			return nil, nil, err
-		}
+		// If no credentials found, create default config
+		// The credentials manager will handle the error when trying to get a token
+		cfg = config.DefaultConfig()
 	}
 
 	// Override with flags if provided
 	if flagServer != "" {
 		cfg.BaseURL = flagServer
 	}
+	if flagAuthServer != "" {
+		cfg.AuthServer = flagAuthServer
+	}
 	if flagToken != "" {
+		// Explicit token provided - disable credentials manager
 		cfg.Token = flagToken
+		cfg.UseCredentialsManager = false
+	}
+
+	// Initialize credentials manager if needed
+	if cfg.UseCredentialsManager {
+		ctx := context.Background()
+		if err := cfg.InitializeCredentialsManager(ctx); err != nil {
+			return nil, nil, fmt.Errorf("initializing credentials manager: %w", err)
+		}
 	}
 
 	// Use REST client if --rest flag is set
 	if flagUseREST {
-		return client.NewClientFromConfig(cfg), func() {}, nil
+		restClient := client.NewClientFromConfig(cfg)
+		cleanup := func() {
+			restClient.Close()
+		}
+		return restClient, cleanup, nil
 	}
 
 	// Use gRPC client by default
@@ -98,9 +113,10 @@ func getClient() (client.StashClient, func(), error) {
 		return nil, nil, fmt.Errorf("creating gRPC client: %w", err)
 	}
 
-	// Return cleanup function to close connection
+	// Return cleanup function to close both client and config
 	cleanup := func() {
 		grpcClient.Close()
+		cfg.Close()
 	}
 
 	return grpcClient, cleanup, nil
