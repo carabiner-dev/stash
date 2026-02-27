@@ -27,7 +27,9 @@ type UploadAttestationsRequest struct {
 	// Namespace for the attestations (empty string = default namespace).
 	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	// Raw attestation JSON (max 1MB each, max 100 attestations).
-	Attestations  [][]byte `protobuf:"bytes,2,rep,name=attestations,proto3" json:"attestations,omitempty"`
+	Attestations [][]byte `protobuf:"bytes,2,rep,name=attestations,proto3" json:"attestations,omitempty"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -74,6 +76,13 @@ func (x *UploadAttestationsRequest) GetAttestations() [][]byte {
 		return x.Attestations
 	}
 	return nil
+}
+
+func (x *UploadAttestationsRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
 }
 
 // UploadAttestationsResponse contains upload results.
@@ -213,6 +222,8 @@ type GetAttestationRequest struct {
 	RawOnly bool `protobuf:"varint,5,opt,name=raw_only,json=rawOnly,proto3" json:"raw_only,omitempty"`
 	// If true, only return predicate
 	PredicateOnly bool `protobuf:"varint,6,opt,name=predicate_only,json=predicateOnly,proto3" json:"predicate_only,omitempty"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -302,6 +313,13 @@ func (x *GetAttestationRequest) GetPredicateOnly() bool {
 	return false
 }
 
+func (x *GetAttestationRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
 type isGetAttestationRequest_Identifier interface {
 	isGetAttestationRequest_Identifier()
 }
@@ -389,9 +407,11 @@ func (x *GetAttestationResponse) GetRawPredicate() []byte {
 type ListAttestationsRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// Namespace (empty string = default namespace).
-	Namespace     string   `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
-	Filters       *Filters `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
-	Cursor        *Cursor  `protobuf:"bytes,3,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	Namespace string   `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	Filters   *Filters `protobuf:"bytes,2,opt,name=filters,proto3" json:"filters,omitempty"`
+	Cursor    *Cursor  `protobuf:"bytes,3,opt,name=cursor,proto3" json:"cursor,omitempty"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -445,6 +465,13 @@ func (x *ListAttestationsRequest) GetCursor() *Cursor {
 		return x.Cursor
 	}
 	return nil
+}
+
+func (x *ListAttestationsRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
 }
 
 // ListAttestationsResponse contains paginated attestation list.
@@ -509,7 +536,9 @@ type DeleteAttestationRequest struct {
 	//
 	//	*DeleteAttestationRequest_AttestationId
 	//	*DeleteAttestationRequest_ContentHash
-	Identifier    isDeleteAttestationRequest_Identifier `protobuf_oneof:"identifier"`
+	Identifier isDeleteAttestationRequest_Identifier `protobuf_oneof:"identifier"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -572,6 +601,13 @@ func (x *DeleteAttestationRequest) GetContentHash() string {
 		if x, ok := x.Identifier.(*DeleteAttestationRequest_ContentHash); ok {
 			return x.ContentHash
 		}
+	}
+	return ""
+}
+
+func (x *DeleteAttestationRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
 	}
 	return ""
 }
@@ -643,6 +679,8 @@ type UpdateAttestationRequest struct {
 	// Namespace (empty string = default namespace).
 	Namespace     string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
 	AttestationId string `protobuf:"bytes,2,opt,name=attestation_id,json=attestationId,proto3" json:"attestation_id,omitempty"` // Future: metadata updates
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -687,6 +725,13 @@ func (x *UpdateAttestationRequest) GetNamespace() string {
 func (x *UpdateAttestationRequest) GetAttestationId() string {
 	if x != nil {
 		return x.AttestationId
+	}
+	return ""
+}
+
+func (x *UpdateAttestationRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
 	}
 	return ""
 }
@@ -822,10 +867,12 @@ var File_carabiner_stash_v1_stash_proto protoreflect.FileDescriptor
 
 const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"\n" +
-	"\x1ecarabiner/stash/v1/stash.proto\x12\x12carabiner.stash.v1\x1a$carabiner/stash/v1/attestation.proto\x1a carabiner/stash/v1/filters.proto\x1a\"carabiner/stash/v1/publickey.proto\"]\n" +
+	"\x1ecarabiner/stash/v1/stash.proto\x12\x12carabiner.stash.v1\x1a$carabiner/stash/v1/attestation.proto\x1a carabiner/stash/v1/filters.proto\x1a\"carabiner/stash/v1/publickey.proto\"t\n" +
 	"\x19UploadAttestationsRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\"\n" +
-	"\fattestations\x18\x02 \x03(\fR\fattestations\"]\n" +
+	"\fattestations\x18\x02 \x03(\fR\fattestations\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"]\n" +
 	"\x1aUploadAttestationsResponse\x12?\n" +
 	"\aresults\x18\x01 \x03(\v2%.carabiner.stash.v1.AttestationResultR\aresults\"\xa9\x01\n" +
 	"\x11AttestationResult\x12%\n" +
@@ -833,39 +880,47 @@ const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"\fcontent_hash\x18\x02 \x01(\tR\vcontentHash\x12\x16\n" +
 	"\x06stored\x18\x03 \x01(\bR\x06stored\x12\x1c\n" +
 	"\tvalidated\x18\x04 \x01(\bR\tvalidated\x12\x14\n" +
-	"\x05error\x18\x05 \x01(\tR\x05error\"\xfc\x01\n" +
+	"\x05error\x18\x05 \x01(\tR\x05error\"\x93\x02\n" +
 	"\x15GetAttestationRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12'\n" +
 	"\x0eattestation_id\x18\x02 \x01(\tH\x00R\rattestationId\x12#\n" +
 	"\fcontent_hash\x18\x03 \x01(\tH\x00R\vcontentHash\x12'\n" +
 	"\x0epredicate_hash\x18\x04 \x01(\tH\x00R\rpredicateHash\x12\x19\n" +
 	"\braw_only\x18\x05 \x01(\bR\arawOnly\x12%\n" +
-	"\x0epredicate_only\x18\x06 \x01(\bR\rpredicateOnlyB\f\n" +
+	"\x0epredicate_only\x18\x06 \x01(\bR\rpredicateOnly\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgIdB\f\n" +
 	"\n" +
 	"identifier\"\xa9\x01\n" +
 	"\x16GetAttestationResponse\x12A\n" +
 	"\vattestation\x18\x01 \x01(\v2\x1f.carabiner.stash.v1.AttestationR\vattestation\x12'\n" +
 	"\x0fraw_attestation\x18\x02 \x01(\fR\x0erawAttestation\x12#\n" +
-	"\rraw_predicate\x18\x03 \x01(\fR\frawPredicate\"\xa2\x01\n" +
+	"\rraw_predicate\x18\x03 \x01(\fR\frawPredicate\"\xb9\x01\n" +
 	"\x17ListAttestationsRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x125\n" +
 	"\afilters\x18\x02 \x01(\v2\x1b.carabiner.stash.v1.FiltersR\afilters\x122\n" +
-	"\x06cursor\x18\x03 \x01(\v2\x1a.carabiner.stash.v1.CursorR\x06cursor\"\x9c\x01\n" +
+	"\x06cursor\x18\x03 \x01(\v2\x1a.carabiner.stash.v1.CursorR\x06cursor\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"\x9c\x01\n" +
 	"\x18ListAttestationsResponse\x12C\n" +
 	"\fattestations\x18\x01 \x03(\v2\x1f.carabiner.stash.v1.AttestationR\fattestations\x12;\n" +
 	"\vnext_cursor\x18\x02 \x01(\v2\x1a.carabiner.stash.v1.CursorR\n" +
-	"nextCursor\"\x94\x01\n" +
+	"nextCursor\"\xab\x01\n" +
 	"\x18DeleteAttestationRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12'\n" +
 	"\x0eattestation_id\x18\x02 \x01(\tH\x00R\rattestationId\x12#\n" +
-	"\fcontent_hash\x18\x03 \x01(\tH\x00R\vcontentHashB\f\n" +
+	"\fcontent_hash\x18\x03 \x01(\tH\x00R\vcontentHash\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgIdB\f\n" +
 	"\n" +
 	"identifier\"5\n" +
 	"\x19DeleteAttestationResponse\x12\x18\n" +
-	"\adeleted\x18\x01 \x01(\bR\adeleted\"_\n" +
+	"\adeleted\x18\x01 \x01(\bR\adeleted\"v\n" +
 	"\x18UpdateAttestationRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12%\n" +
-	"\x0eattestation_id\x18\x02 \x01(\tR\rattestationId\"\x1b\n" +
+	"\x0eattestation_id\x18\x02 \x01(\tR\rattestationId\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"\x1b\n" +
 	"\x19UpdateAttestationResponse\"\x14\n" +
 	"\x12HealthCheckRequest\"\xc5\x01\n" +
 	"\x13HealthCheckResponse\x12\x16\n" +

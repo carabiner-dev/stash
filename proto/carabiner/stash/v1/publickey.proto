@@ -17,6 +17,9 @@ message PublicKey {
 // UploadPublicKeyRequest uploads a public key.
 message UploadPublicKeyRequest {
   bytes key_data = 1; // PEM-encoded public key
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
 }
 
 // UploadPublicKeyResponse returns the key ID.
@@ -27,6 +30,9 @@ message UploadPublicKeyResponse {
 // DeletePublicKeyRequest deletes a public key.
 message DeletePublicKeyRequest {
   string key_id = 1;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
 }
 
 // DeletePublicKeyResponse confirms deletion.
@@ -35,7 +41,10 @@ message DeletePublicKeyResponse {
 }
 
 // ListPublicKeysRequest lists public keys.
-message ListPublicKeysRequest {}
+message ListPublicKeysRequest {
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
 
 // ListPublicKeysResponse contains public keys.
 message ListPublicKeysResponse {

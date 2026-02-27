@@ -71,7 +71,7 @@ Examples:
 			}
 
 			// Get client
-			c, cleanup, err := opts.NewClient()
+			c, cleanup, err := opts.NewClient(orgID, opts.Namespace)
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}

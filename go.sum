@@ -37,6 +37,8 @@ github.com/Microsoft/go-winio v0.6.2 h1:F2VQgta7ecxGYO8k3ZZz3RS8fVIXVxONVUPlNERo
 github.com/Microsoft/go-winio v0.6.2/go.mod h1:yd8OoFMLzJbo9gZq8j5qaps8bJ9aShtEA8Ipt1oGCvU=
 github.com/ProtonMail/go-crypto v1.3.0 h1:ILq8+Sf5If5DCpHQp4PbZdS1J7HDFRXz/+xKBiRGFrw=
 github.com/ProtonMail/go-crypto v1.3.0/go.mod h1:9whxjD8Rbs29b4XWbB8irEcE8KHMqaR2e7GWU1R+/PE=
+github.com/adrg/xdg v0.5.3 h1:xRnxJXne7+oWDatRhR1JLnvuccuIeCoBu2rtuLqQB78=
+github.com/adrg/xdg v0.5.3/go.mod h1:nlTsY+NNiCBGCK2tpm09vRqfVzrc2fLmXGpBLF0zlTQ=
 github.com/alessio/shellescape v1.4.1 h1:V7yhSDDn8LP4lc4jS8pFkt0zCnzVJlG5JXy9BVKJUX0=
 github.com/alessio/shellescape v1.4.1/go.mod h1:PZAiSCk0LJaZkiCSkPv8qIobYglO3FPpyFjDCtHLS30=
 github.com/anchore/go-struct-converter v0.0.0-20221118182256-c68fdcfa2092/go.mod h1:rYqSE9HbjzpHTI74vwPvae4ZVYZd1lue2ta6xHPdblA=
@@ -88,8 +90,8 @@ github.com/carabiner-dev/collector v0.2.7 h1:AXWLZLVbNrlCF+LD1HomhhLuWStBXU3Eu0Y
 github.com/carabiner-dev/collector v0.2.7/go.mod h1:rEA2pi7i7pKhw+nO8jdbnB/p8jZNjR5XC3TuIIWs5Xo=
 github.com/carabiner-dev/command v0.2.0 h1:PxYLg5Tf2tN7VBnFByq2L/HyJ6sgIqZhnNVnrXCFzc8=
 github.com/carabiner-dev/command v0.2.0/go.mod h1:svMEE2UmWE6ITNQ1HeFS/MFh/LfhFVDSWsRwRmQzWQ8=
-github.com/carabiner-dev/deadrop v0.0.0-20260210142531-9b516ff96080 h1:y413e/8cK03dArPw3SLZbKKGzXKZgzOnjIcTmSyHBSc=
-github.com/carabiner-dev/deadrop v0.0.0-20260210142531-9b516ff96080/go.mod h1:iJNmFbwrCpT8Xe4qjzqReQp8YHwQGt2T5VVEUdseKUk=
+github.com/carabiner-dev/deadrop v0.0.0-20260218020425-67822b807da3 h1:r+A6MtE4TSzaRViM3COevUvB6JyZ81dDyXEfOcAbYLw=
+github.com/carabiner-dev/deadrop v0.0.0-20260218020425-67822b807da3/go.mod h1:YgBY37MPkZ1Z99A4hRXFQxY6FbD9QINpAzI2l8xgCaU=
 github.com/carabiner-dev/hasher v0.2.3 h1:678/FKyUJexzDznoIomnW/Z71hoL6Ehz99W2ZP2ACxE=
 github.com/carabiner-dev/hasher v0.2.3/go.mod h1:TRannDvJs5eL61xA/K/whtYbZLQPb/CGFXtDnx4h37M=
 github.com/carabiner-dev/jsonl v0.2.1 h1:2cBv4mGoqWfVkeQO1krIGds9WUm9Jet89QdqWLodlfo=
@@ -218,8 +220,8 @@ github.com/go-viper/mapstructure/v2 v2.4.0 h1:EBsztssimR/CONLSZZ04E8qAkxNYq4Qp9L
 github.com/go-viper/mapstructure/v2 v2.4.0/go.mod h1:oJDH3BJKyqBA2TXFhDsKDGDTlndYOZ6rGS0BRZIxGhM=
 github.com/godbus/dbus/v5 v5.1.0 h1:4KLkAxT3aOY8Li4FRJe/KvhoNFFxo0m6fNuFUO8QJUk=
 github.com/godbus/dbus/v5 v5.1.0/go.mod h1:xhWf0FNVPg57R7Z0UbKHbJfkEywrmjJnf7w5xrFpKfA=
-github.com/golang-jwt/jwt/v5 v5.3.0 h1:pv4AsKCKKZuqlgs5sUmn4x8UlGa0kEVt/puTpKx9vvo=
-github.com/golang-jwt/jwt/v5 v5.3.0/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArsqaEUEa5bE=
+github.com/golang-jwt/jwt/v5 v5.3.1 h1:kYf81DTWFe7t+1VvL7eS+jKFVWaUnK9cB1qbwn63YCY=
+github.com/golang-jwt/jwt/v5 v5.3.1/go.mod h1:fxCRLWMO43lRc8nhHWY6LGqRcf+1gQWArsqaEUEa5bE=
 github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 h1:f+oWsMOmNPc8JmEHVZIycC7hBoQxHH9pNKQORJNozsQ=
 github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8/go.mod h1:wcDNUvekVysuuOpQKo3191zZyTpiI6se1N1ULghS0sw=
 github.com/golang/protobuf v1.5.4 h1:i7eJL8qZTpSEXOPTxNKhASYpMn+8e5Q6AdndVa1dWek=

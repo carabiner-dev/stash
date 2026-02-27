@@ -53,7 +53,7 @@ func (co *ClientOptions) AddFlags(cmd *cobra.Command) {
 }
 
 // NewClient creates a new Stash client based on the configured options.
-func (co *ClientOptions) NewClient() (client.StashClient, func(), error) {
+func (co *ClientOptions) NewClient(orgID, namespace string) (client.StashClient, func(), error) {
 	// Load configuration
 	cfg, err := config.LoadConfig()
 	if err != nil {
@@ -77,7 +77,7 @@ func (co *ClientOptions) NewClient() (client.StashClient, func(), error) {
 	// Initialize credentials manager if needed
 	if cfg.UseCredentialsManager {
 		ctx := context.Background()
-		if err := cfg.InitializeCredentialsManager(ctx); err != nil {
+		if err := cfg.InitializeCredentialsManager(ctx, orgID); err != nil {
 			return nil, nil, err
 		}
 	}

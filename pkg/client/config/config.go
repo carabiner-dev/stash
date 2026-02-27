@@ -3,12 +3,15 @@ package config
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"github.com/carabiner-dev/deadrop/pkg/client/credentials"
+	"github.com/carabiner-dev/deadrop/pkg/client/exchange"
 )
 
 // Config holds client configuration.
@@ -27,8 +30,8 @@ type Config struct {
 	// If false, uses static token from Token field.
 	UseCredentialsManager bool
 
-	// credentialsManager is the credentials manager instance (internal).
-	credentialsManager *credentials.Manager
+	// tokenSource is the service token source for automatic token exchange (internal).
+	tokenSource credentials.TokenSource
 }
 
 // DefaultConfig returns the default client configuration.
@@ -118,80 +121,184 @@ func SaveToken(token string) error {
 	return nil
 }
 
-// InitializeCredentialsManager initializes the credentials manager for this config.
-// The manager will exchange the Carabiner ID token for a Stash-specific token.
-func (c *Config) InitializeCredentialsManager(ctx context.Context) error {
+// renewingIdentitySource is a TokenSource that automatically renews expired identity tokens.
+type renewingIdentitySource struct {
+	serverURL string
+}
+
+func (r *renewingIdentitySource) Token(ctx context.Context) (string, error) {
+	// Use LoadIdentityWithRenewal to automatically handle expired tokens
+	token, _, _, err := credentials.LoadIdentityWithRenewal(ctx, r.serverURL)
+	if err != nil {
+		return "", err
+	}
+	return token, nil
+}
+
+// InitializeCredentialsManager initializes the service token source for this config.
+// The token source will exchange the Carabiner identity token for a Stash-specific token.
+// It extracts the orgs from the identity token and requests resource claims for all of them.
+func (c *Config) InitializeCredentialsManager(ctx context.Context, orgID string) error {
 	if !c.UseCredentialsManager {
-		return nil // Using static token, no manager needed
+		return nil // Using static token, no token source needed
 	}
 
-	if c.credentialsManager != nil {
+	if c.tokenSource != nil {
 		return nil // Already initialized
 	}
 
-	// Create default token source (checks CARABINER_CREDENTIALS env and ~/.carabiner/credentials file)
-	tokenSource, err := credentials.DefaultTokenSource()
+	// Load the identity token to extract orgs
+	identityToken, _, _, err := credentials.LoadIdentityWithRenewal(ctx, c.AuthServer)
 	if err != nil {
-		return fmt.Errorf("creating token source: %w", err)
+		return fmt.Errorf("loading identity token: %w", err)
 	}
 
-	// Create credentials manager
-	manager, err := credentials.NewManager(
-		ctx,
-		credentials.WithTokenSource(tokenSource),
-		credentials.WithServer(c.AuthServer),
+	// Parse orgs from the identity token
+	orgs, err := parseOrgsFromToken(identityToken)
+	if err != nil {
+		return fmt.Errorf("parsing orgs from identity token: %w", err)
+	}
+
+	// Build exchange request with audience "stash" and resource claims for all orgs
+	req := &exchange.ExchangeRequest{
+		Audience: []string{"stash"},
+	}
+
+	// Add resource claims for all orgs the user has access to
+	// Format: /v1/{orgID}/* - request access to all namespaces in each org
+	if len(orgs) > 0 {
+		resources := make([]string, len(orgs))
+		for i, org := range orgs {
+			resources[i] = fmt.Sprintf("/v1/%s/*", org)
+		}
+		req.Resource = resources
+		fmt.Fprintf(os.Stderr, "DEBUG: Token exchange request - orgs from identity: %v, requesting resources: %v\n", orgs, resources)
+	} else {
+		fmt.Fprintf(os.Stderr, "DEBUG: Token exchange request - no orgs found in identity token\n")
+	}
+
+	// Create renewing identity source that handles token refresh
+	identitySource := &renewingIdentitySource{
+		serverURL: c.AuthServer,
+	}
+
+	// Create service token source with persistence and auto-renewing identity source
+	source, err := credentials.NewServiceTokenSource(
+		req,
+		c.AuthServer,
+		credentials.WithServicePersistence(),
+		credentials.WithServiceIdentitySource(identitySource),
 	)
 	if err != nil {
-		return fmt.Errorf("creating credentials manager: %w", err)
+		return fmt.Errorf("creating service token source: %w", err)
 	}
 
-	// Determine audience from BaseURL
-	audience := c.BaseURL
-	if audience == "" {
-		audience = "https://stash.carabiner.dev"
-	}
-
-	// Register stash session with appropriate audience
-	spec := credentials.ExchangeSpec{
-		Audience: []string{audience},
-	}
-
-	if err := manager.Register(ctx, "stash", spec); err != nil {
-		manager.Close()
-		return fmt.Errorf("registering stash session: %w", err)
-	}
-
-	c.credentialsManager = manager
+	c.tokenSource = source
 	return nil
 }
 
-// GetToken returns a valid token, either static or from the credentials manager.
+// parseOrgsFromToken extracts the orgs claim from a JWT token.
+func parseOrgsFromToken(tokenString string) ([]string, error) {
+	// Split JWT into parts
+	parts := strings.Split(tokenString, ".")
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("invalid JWT format")
+	}
+
+	// Decode the payload (second part)
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return nil, fmt.Errorf("decoding JWT payload: %w", err)
+	}
+
+	// Parse the JSON payload
+	var claims struct {
+		Orgs []string `json:"orgs"`
+	}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return nil, fmt.Errorf("parsing JWT claims: %w", err)
+	}
+
+	return claims.Orgs, nil
+}
+
+// DeriveOrgFromToken attempts to derive a single org ID from the token.
+// Returns the org ID if the token has exactly one org, or empty string if:
+// - Token has no orgs
+// - Token has multiple orgs (ambiguous - user must specify)
+func (c *Config) DeriveOrgFromToken(ctx context.Context) (string, error) {
+	// Get the service token (which has the org-specific resource claims)
+	token, err := c.GetToken(ctx)
+	if err != nil {
+		return "", fmt.Errorf("getting token: %w", err)
+	}
+
+	// Parse namespaces from token to determine orgs
+	parts := strings.Split(token, ".")
+	if len(parts) != 3 {
+		return "", fmt.Errorf("invalid JWT format")
+	}
+
+	payload, err := base64.RawURLEncoding.DecodeString(parts[1])
+	if err != nil {
+		return "", fmt.Errorf("decoding JWT payload: %w", err)
+	}
+
+	var claims struct {
+		Namespaces []string `json:"namespaces"`
+	}
+	if err := json.Unmarshal(payload, &claims); err != nil {
+		return "", fmt.Errorf("parsing JWT claims: %w", err)
+	}
+
+	// Extract unique org IDs from namespace URLs
+	orgIDs := make(map[string]bool)
+	for _, ns := range claims.Namespaces {
+		// Parse URL like "https://stash.dev.carabiner.dev/v1/puerco/*"
+		// Extract the org ID (part after /v1/)
+		parts := strings.Split(ns, "/")
+		if len(parts) >= 5 && parts[3] == "v1" {
+			orgID := parts[4]
+			orgIDs[orgID] = true
+		}
+	}
+
+	// If exactly one org, return it
+	if len(orgIDs) == 1 {
+		for orgID := range orgIDs {
+			return orgID, nil
+		}
+	}
+
+	// Multiple orgs or no orgs - cannot determine
+	return "", nil
+}
+
+// GetToken returns a valid token, either static or from the service token source.
 func (c *Config) GetToken(ctx context.Context) (string, error) {
 	// If using static token, return it directly
 	if !c.UseCredentialsManager || c.Token != "" {
 		return c.Token, nil
 	}
 
-	// Ensure credentials manager is initialized
-	if c.credentialsManager == nil {
-		if err := c.InitializeCredentialsManager(ctx); err != nil {
+	// Ensure token source is initialized (without org restriction if not set during init)
+	if c.tokenSource == nil {
+		if err := c.InitializeCredentialsManager(ctx, ""); err != nil {
 			return "", err
 		}
 	}
 
-	// Get token from credentials manager
-	token, err := c.credentialsManager.Token(ctx, "stash")
+	// Get token from service token source
+	token, err := c.tokenSource.Token(ctx)
 	if err != nil {
-		return "", fmt.Errorf("getting token from credentials manager: %w", err)
+		return "", fmt.Errorf("getting token from service token source: %w", err)
 	}
 
 	return token, nil
 }
 
-// Close closes the credentials manager if active.
+// Close closes the token source if active.
 func (c *Config) Close() error {
-	if c.credentialsManager != nil {
-		return c.credentialsManager.Close()
-	}
+	// ServiceTokenSource doesn't need explicit closing
 	return nil
 }

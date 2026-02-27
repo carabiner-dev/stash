@@ -93,8 +93,10 @@ func (x *PublicKey) GetCreatedAt() *timestamppb.Timestamp {
 
 // UploadPublicKeyRequest uploads a public key.
 type UploadPublicKeyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyData       []byte                 `protobuf:"bytes,1,opt,name=key_data,json=keyData,proto3" json:"key_data,omitempty"` // PEM-encoded public key
+	state   protoimpl.MessageState `protogen:"open.v1"`
+	KeyData []byte                 `protobuf:"bytes,1,opt,name=key_data,json=keyData,proto3" json:"key_data,omitempty"` // PEM-encoded public key
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -134,6 +136,13 @@ func (x *UploadPublicKeyRequest) GetKeyData() []byte {
 		return x.KeyData
 	}
 	return nil
+}
+
+func (x *UploadPublicKeyRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
 }
 
 // UploadPublicKeyResponse returns the key ID.
@@ -183,8 +192,10 @@ func (x *UploadPublicKeyResponse) GetKeyId() string {
 
 // DeletePublicKeyRequest deletes a public key.
 type DeletePublicKeyRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
-	KeyId         string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	KeyId string                 `protobuf:"bytes,1,opt,name=key_id,json=keyId,proto3" json:"key_id,omitempty"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -222,6 +233,13 @@ func (*DeletePublicKeyRequest) Descriptor() ([]byte, []int) {
 func (x *DeletePublicKeyRequest) GetKeyId() string {
 	if x != nil {
 		return x.KeyId
+	}
+	return ""
+}
+
+func (x *DeletePublicKeyRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
 	}
 	return ""
 }
@@ -273,7 +291,9 @@ func (x *DeletePublicKeyResponse) GetDeleted() bool {
 
 // ListPublicKeysRequest lists public keys.
 type ListPublicKeysRequest struct {
-	state         protoimpl.MessageState `protogen:"open.v1"`
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -306,6 +326,13 @@ func (x *ListPublicKeysRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListPublicKeysRequest.ProtoReflect.Descriptor instead.
 func (*ListPublicKeysRequest) Descriptor() ([]byte, []int) {
 	return file_carabiner_stash_v1_publickey_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListPublicKeysRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
 }
 
 // ListPublicKeysResponse contains public keys.
@@ -363,16 +390,22 @@ const file_carabiner_stash_v1_publickey_proto_rawDesc = "" +
 	"\bkey_data\x18\x02 \x01(\fR\akeyData\x12\x1c\n" +
 	"\talgorithm\x18\x03 \x01(\tR\talgorithm\x129\n" +
 	"\n" +
-	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"3\n" +
+	"created_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\"J\n" +
 	"\x16UploadPublicKeyRequest\x12\x19\n" +
-	"\bkey_data\x18\x01 \x01(\fR\akeyData\"0\n" +
+	"\bkey_data\x18\x01 \x01(\fR\akeyData\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"0\n" +
 	"\x17UploadPublicKeyResponse\x12\x15\n" +
-	"\x06key_id\x18\x01 \x01(\tR\x05keyId\"/\n" +
+	"\x06key_id\x18\x01 \x01(\tR\x05keyId\"F\n" +
 	"\x16DeletePublicKeyRequest\x12\x15\n" +
-	"\x06key_id\x18\x01 \x01(\tR\x05keyId\"3\n" +
+	"\x06key_id\x18\x01 \x01(\tR\x05keyId\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"3\n" +
 	"\x17DeletePublicKeyResponse\x12\x18\n" +
-	"\adeleted\x18\x01 \x01(\bR\adeleted\"\x17\n" +
-	"\x15ListPublicKeysRequest\"K\n" +
+	"\adeleted\x18\x01 \x01(\bR\adeleted\".\n" +
+	"\x15ListPublicKeysRequest\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"K\n" +
 	"\x16ListPublicKeysResponse\x121\n" +
 	"\x04keys\x18\x01 \x03(\v2\x1d.carabiner.stash.v1.PublicKeyR\x04keysB\xcd\x01\n" +
 	"\x16com.carabiner.stash.v1B\x0ePublickeyProtoP\x01Z9github.com/carabiner-dev/stash/carabiner/stash/v1;stashv1\xa2\x02\x03CSX\xaa\x02\x12Carabiner.Stash.V1\xca\x02\x12Carabiner\\Stash\\V1\xe2\x02\x1eCarabiner\\Stash\\V1\\GPBMetadata\xea\x02\x14Carabiner::Stash::V1b\x06proto3"

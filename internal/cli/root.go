@@ -31,6 +31,7 @@ By default, the client uses gRPC for communication. Use --rest to fall back to R
 	}
 
 	// Add subcommands
+	AddAuth(rootCmd)
 	AddPush(rootCmd)
 	AddGet(rootCmd)
 	AddList(rootCmd)

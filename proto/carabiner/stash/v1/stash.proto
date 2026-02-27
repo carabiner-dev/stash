@@ -45,6 +45,9 @@ message UploadAttestationsRequest {
 
   // Raw attestation JSON (max 1MB each, max 100 attestations).
   repeated bytes attestations = 2;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
 }
 
 // UploadAttestationsResponse contains upload results.
@@ -77,6 +80,9 @@ message GetAttestationRequest {
 
   // If true, only return predicate
   bool predicate_only = 6;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
 }
 
 // GetAttestationResponse contains attestation data.
@@ -93,6 +99,9 @@ message ListAttestationsRequest {
 
   Filters filters = 2;
   Cursor cursor = 3;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
 }
 
 // ListAttestationsResponse contains paginated attestation list.
@@ -110,6 +119,9 @@ message DeleteAttestationRequest {
     string attestation_id = 2;
     string content_hash = 3;
   }
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
 }
 
 // DeleteAttestationResponse confirms deletion.
@@ -124,6 +136,9 @@ message UpdateAttestationRequest {
 
   string attestation_id = 2;
   // Future: metadata updates
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
 }
 
 // UpdateAttestationResponse confirms update.

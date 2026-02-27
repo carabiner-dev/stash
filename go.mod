@@ -6,7 +6,7 @@ require (
 	github.com/carabiner-dev/attestation v0.2.0
 	github.com/carabiner-dev/collector v0.2.7
 	github.com/carabiner-dev/command v0.2.0
-	github.com/carabiner-dev/deadrop v0.0.0-20260210142531-9b516ff96080
+	github.com/carabiner-dev/deadrop v0.0.0-20260218020425-67822b807da3
 	github.com/spf13/cobra v1.10.2
 	google.golang.org/grpc v1.78.0
 	google.golang.org/protobuf v1.36.11
@@ -17,6 +17,7 @@ require (
 	github.com/CycloneDX/cyclonedx-go v0.9.2 // indirect
 	github.com/Microsoft/go-winio v0.6.2 // indirect
 	github.com/ProtonMail/go-crypto v1.3.0 // indirect
+	github.com/adrg/xdg v0.5.3 // indirect
 	github.com/asaskevich/govalidator v0.0.0-20230301143203-a9d515a09cc2 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
@@ -66,6 +67,7 @@ require (
 	github.com/go-openapi/swag/yamlutils v0.25.4 // indirect
 	github.com/go-openapi/validate v0.25.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.4.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/certificate-transparency-go v1.3.2 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
