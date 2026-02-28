@@ -127,7 +127,7 @@ type renewingIdentitySource struct {
 }
 
 func (r *renewingIdentitySource) Token(ctx context.Context) (string, error) {
-	// Use LoadIdentityWithRenewal to automatically handle expired tokens
+	// LoadIdentityWithRenewal already handles disk caching and automatic renewal
 	token, _, _, err := credentials.LoadIdentityWithRenewal(ctx, r.serverURL)
 	if err != nil {
 		return "", err
@@ -172,9 +172,6 @@ func (c *Config) InitializeCredentialsManager(ctx context.Context, orgID string)
 			resources[i] = fmt.Sprintf("/v1/%s/*", org)
 		}
 		req.Resource = resources
-		fmt.Fprintf(os.Stderr, "DEBUG: Token exchange request - orgs from identity: %v, requesting resources: %v\n", orgs, resources)
-	} else {
-		fmt.Fprintf(os.Stderr, "DEBUG: Token exchange request - no orgs found in identity token\n")
 	}
 
 	// Create renewing identity source that handles token refresh
@@ -182,11 +179,12 @@ func (c *Config) InitializeCredentialsManager(ctx context.Context, orgID string)
 		serverURL: c.AuthServer,
 	}
 
-	// Create service token source with persistence and auto-renewing identity source
+	// Create service token source with persistence, caching, and auto-renewing identity source
 	source, err := credentials.NewServiceTokenSource(
 		req,
 		c.AuthServer,
-		credentials.WithServicePersistence(),
+		credentials.WithServicePersistence(),        // Enable disk persistence for cross-process caching
+		credentials.WithServiceRefreshBuffer(0.1),   // Refresh at 90% of token lifetime (more conservative)
 		credentials.WithServiceIdentitySource(identitySource),
 	)
 	if err != nil {

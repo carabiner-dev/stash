@@ -137,7 +137,7 @@ Examples:
 			}
 
 			// Get client
-			c, cleanup, err := opts.NewClient(orgID, "")
+			c, cleanup, err := opts.NewClient(cmd.Context(), orgID, "")
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -197,7 +197,7 @@ Examples:
 			}
 
 			// Get client
-			c, cleanup, err := opts.NewClient(orgID, "")
+			c, cleanup, err := opts.NewClient(cmd.Context(), orgID, "")
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}
@@ -267,7 +267,7 @@ Examples:
 			}
 
 			// Get client
-			c, cleanup, err := opts.NewClient(orgID, "")
+			c, cleanup, err := opts.NewClient(cmd.Context(), orgID, "")
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}

@@ -126,7 +126,7 @@ Examples:
 			}
 
 			// Get client
-			c, cleanup, err := opts.NewClient(orgID, opts.Namespace)
+			c, cleanup, err := opts.NewClient(cmd.Context(), orgID, opts.Namespace)
 			if err != nil {
 				return fmt.Errorf("creating client: %w", err)
 			}

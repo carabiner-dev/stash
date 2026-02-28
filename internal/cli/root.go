@@ -7,6 +7,7 @@ package cli
 import (
 	"fmt"
 
+	"github.com/carabiner-dev/command/log"
 	"github.com/spf13/cobra"
 )
 
@@ -15,6 +16,9 @@ var (
 	Version   = "dev"
 	GitCommit = "unknown"
 	BuildDate = "unknown"
+
+	// Global log options
+	logOpts = &log.Options{}
 )
 
 // Execute runs the root command.
@@ -28,7 +32,19 @@ Push, retrieve, query, and manage attestations and public keys.
 By default, the client uses gRPC for communication. Use --rest to fall back to REST API.`,
 		SilenceUsage:  true,
 		SilenceErrors: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			// Initialize logger and add to context
+			ctx, err := logOpts.WithLogger(cmd.Context())
+			if err != nil {
+				return err
+			}
+			cmd.SetContext(ctx)
+			return nil
+		},
 	}
+
+	// Add global log flags
+	logOpts.AddFlags(rootCmd)
 
 	// Add subcommands
 	AddAuth(rootCmd)
