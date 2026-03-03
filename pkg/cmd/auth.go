@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	deadropcmd "github.com/carabiner-dev/deadrop/pkg/cmd"

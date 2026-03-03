@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"context"
@@ -16,7 +16,7 @@ import (
 
 var _ command.OptionsSet = (*ClientOptions)(nil)
 
-var defaultClientOptions = ClientOptions{
+var DefaultClientOptions = ClientOptions{
 	Server:     "",
 	AuthServer: "",
 	Token:      "",
@@ -113,14 +113,9 @@ func (co *ClientOptions) GetOrg() (string, error) {
 	}
 
 	// Check environment variable
-	if envOrg := getEnvOrg(); envOrg != "" {
+	if envOrg := os.Getenv("STASH_ORG"); envOrg != "" {
 		return envOrg, nil
 	}
 
 	return "", errors.New("organization ID is required (use --org flag or STASH_ORG environment variable)")
-}
-
-// getEnvOrg returns the organization ID from environment variable.
-func getEnvOrg() string {
-	return os.Getenv("STASH_ORG")
 }

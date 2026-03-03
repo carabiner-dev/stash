@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"errors"
@@ -23,7 +23,7 @@ type PushOptions struct {
 }
 
 var defaultPushOptions = PushOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 	Stdin:         false,
 	Namespace:     "",
 }

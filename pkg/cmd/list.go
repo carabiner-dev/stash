@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"encoding/json"
@@ -36,7 +36,7 @@ type ListOptions struct {
 }
 
 var defaultListOptions = ListOptions{
-	ClientOptions:    defaultClientOptions,
+	ClientOptions:    DefaultClientOptions,
 	Namespace:        "",
 	PredicateType:    "",
 	SubjectName:      "",

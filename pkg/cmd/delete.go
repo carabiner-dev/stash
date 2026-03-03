@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"errors"
@@ -19,7 +19,7 @@ type DeleteOptions struct {
 }
 
 var defaultDeleteOptions = DeleteOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 }
 
 func (o *DeleteOptions) Validate() error {
@@ -78,7 +78,7 @@ Examples:
 				return fmt.Errorf("deleting attestation: %w", err)
 			}
 
-			fmt.Println("✓ Attestation deleted successfully")
+			fmt.Println("Attestation deleted successfully")
 
 			return nil
 		},

@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"errors"
@@ -19,7 +19,7 @@ type VerifyOptions struct {
 }
 
 var defaultVerifyOptions = VerifyOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 }
 
 func (o *VerifyOptions) Validate() error {
@@ -87,17 +87,17 @@ Examples:
 			fmt.Printf("Validated: %v\n", attestation.Validated)
 
 			if !attestation.Signed {
-				fmt.Println("\n⚠️  Attestation is not signed")
+				fmt.Println("\nAttestation is not signed")
 				return nil
 			}
 
 			if attestation.ValidationError != "" {
-				fmt.Printf("\n❌ Validation failed: %s\n", attestation.ValidationError)
+				fmt.Printf("\nValidation failed: %s\n", attestation.ValidationError)
 				return nil
 			}
 
 			if attestation.Validated {
-				fmt.Println("\n✓ Attestation signature is valid")
+				fmt.Println("\nAttestation signature is valid")
 				if len(attestation.SignerIdentities) > 0 {
 					fmt.Println("\nSigner identities:")
 					for _, identity := range attestation.SignerIdentities {
@@ -105,7 +105,7 @@ Examples:
 					}
 				}
 			} else {
-				fmt.Println("\n⚠️  Attestation signature could not be validated (no public keys available)")
+				fmt.Println("\nAttestation signature could not be validated (no public keys available)")
 			}
 
 			return nil

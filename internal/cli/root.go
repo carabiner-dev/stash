@@ -7,6 +7,8 @@ package cli
 import (
 	"fmt"
 
+	stashcmd "github.com/carabiner-dev/stash/pkg/cmd"
+
 	"github.com/carabiner-dev/command/log"
 	"github.com/spf13/cobra"
 )
@@ -47,14 +49,14 @@ By default, the client uses gRPC for communication. Use --rest to fall back to R
 	logOpts.AddFlags(rootCmd)
 
 	// Add subcommands
-	AddAuth(rootCmd)
-	AddPush(rootCmd)
-	AddGet(rootCmd)
-	AddList(rootCmd)
-	AddDelete(rootCmd)
-	AddUpdate(rootCmd)
-	AddVerify(rootCmd)
-	AddPublicKey(rootCmd)
+	stashcmd.AddAuth(rootCmd)
+	stashcmd.AddPush(rootCmd)
+	stashcmd.AddGet(rootCmd)
+	stashcmd.AddList(rootCmd)
+	stashcmd.AddDelete(rootCmd)
+	stashcmd.AddUpdate(rootCmd)
+	stashcmd.AddVerify(rootCmd)
+	stashcmd.AddPublicKey(rootCmd)
 	addVersion(rootCmd)
 
 	return rootCmd.Execute()

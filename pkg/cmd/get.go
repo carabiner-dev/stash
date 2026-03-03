@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"encoding/json"
@@ -22,7 +22,7 @@ type GetOptions struct {
 }
 
 var defaultGetOptions = GetOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 	Raw:           false,
 	Predicate:     false,
 }

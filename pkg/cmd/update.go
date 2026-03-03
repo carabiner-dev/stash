@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"errors"
@@ -19,7 +19,7 @@ type UpdateOptions struct {
 }
 
 var defaultUpdateOptions = UpdateOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 }
 
 func (o *UpdateOptions) Validate() error {
@@ -75,7 +75,7 @@ Examples:
 				return fmt.Errorf("updating attestation: %w", err)
 			}
 
-			fmt.Println("✓ Attestation updated successfully")
+			fmt.Println("Attestation updated successfully")
 
 			return nil
 		},

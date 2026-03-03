@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
 // SPDX-License-Identifier: Apache-2.0
 
-package cli
+package cmd
 
 import (
 	"encoding/json"
@@ -21,7 +21,7 @@ type PublicKeyUploadOptions struct {
 }
 
 var defaultPublicKeyUploadOptions = PublicKeyUploadOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 }
 
 func (o *PublicKeyUploadOptions) Validate() error {
@@ -47,7 +47,7 @@ type PublicKeyListOptions struct {
 }
 
 var defaultPublicKeyListOptions = PublicKeyListOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 	JSON:          false,
 }
 
@@ -74,7 +74,7 @@ type PublicKeyDeleteOptions struct {
 }
 
 var defaultPublicKeyDeleteOptions = PublicKeyDeleteOptions{
-	ClientOptions: defaultClientOptions,
+	ClientOptions: DefaultClientOptions,
 }
 
 func (o *PublicKeyDeleteOptions) Validate() error {
@@ -161,7 +161,7 @@ Examples:
 				return fmt.Errorf("uploading public key: %w", err)
 			}
 
-			fmt.Printf("✓ Public key uploaded successfully\n")
+			fmt.Printf("Public key uploaded successfully\n")
 			fmt.Printf("Key ID: %s\n", keyID)
 
 			return nil
@@ -279,7 +279,7 @@ Examples:
 				return fmt.Errorf("deleting public key: %w", err)
 			}
 
-			fmt.Println("✓ Public key deleted successfully")
+			fmt.Println("Public key deleted successfully")
 
 			return nil
 		},
