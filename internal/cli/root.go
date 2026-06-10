@@ -7,10 +7,10 @@ package cli
 import (
 	"fmt"
 
-	stashcmd "github.com/carabiner-dev/stash/pkg/cmd"
-
 	"github.com/carabiner-dev/command/log"
 	"github.com/spf13/cobra"
+
+	stashcmd "github.com/carabiner-dev/stash/pkg/cmd"
 )
 
 var (

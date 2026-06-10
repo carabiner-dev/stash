@@ -9,9 +9,10 @@ import (
 	"os"
 
 	"github.com/carabiner-dev/command"
+	"github.com/spf13/cobra"
+
 	"github.com/carabiner-dev/stash/pkg/client"
 	"github.com/carabiner-dev/stash/pkg/client/config"
-	"github.com/spf13/cobra"
 )
 
 var _ command.OptionsSet = (*ClientOptions)(nil)
@@ -85,7 +86,7 @@ func (co *ClientOptions) NewClient(ctx context.Context, orgID, namespace string)
 	if co.UseREST {
 		restClient := client.NewClientFromConfig(cfg)
 		cleanup := func() {
-			restClient.Close()
+			restClient.Close() //nolint:errcheck,gosec
 		}
 		return restClient, cleanup, nil
 	}
@@ -98,8 +99,8 @@ func (co *ClientOptions) NewClient(ctx context.Context, orgID, namespace string)
 
 	// Return cleanup function to close both client and config
 	cleanup := func() {
-		grpcClient.Close()
-		cfg.Close()
+		grpcClient.Close() //nolint:errcheck,gosec
+		cfg.Close()        //nolint:errcheck,gosec
 	}
 
 	return grpcClient, cleanup, nil

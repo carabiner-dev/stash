@@ -93,7 +93,10 @@ func createMockToken(namespaces []string) string {
 		"sub":        "user@example.com",
 	}
 
-	payload, _ := json.Marshal(claims)
+	payload, err := json.Marshal(claims)
+	if err != nil {
+		panic(err)
+	}
 	encodedPayload := base64.RawURLEncoding.EncodeToString(payload)
 
 	// Create a fake JWT (header.payload.signature)

@@ -52,10 +52,7 @@ func NewGRPCClient(opts *GRPCClientOptions) (*GRPCClient, error) {
 		dialOpts = append(dialOpts, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{})))
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), opts.Timeout)
-	defer cancel()
-
-	conn, err := grpc.DialContext(ctx, opts.Address, dialOpts...)
+	conn, err := grpc.NewClient(opts.Address, dialOpts...)
 	if err != nil {
 		return nil, fmt.Errorf("connecting to server: %w", err)
 	}
@@ -69,12 +66,12 @@ func NewGRPCClient(opts *GRPCClientOptions) (*GRPCClient, error) {
 
 // NewGRPCClientFromConfig creates a gRPC client from configuration.
 func NewGRPCClientFromConfig(cfg *config.Config) (*GRPCClient, error) {
-	address, insecure := parseAddress(cfg.BaseURL)
+	address, insecureConn := parseAddress(cfg.BaseURL)
 
 	client, err := NewGRPCClient(&GRPCClientOptions{
 		Address:  address,
 		Token:    "", // Token will be fetched dynamically from config
-		Insecure: insecure,
+		Insecure: insecureConn,
 	})
 	if err != nil {
 		return nil, err
@@ -125,7 +122,7 @@ func (c *GRPCClient) resolveOrgID(ctx context.Context, orgID string) (string, er
 }
 
 // ctxWithAuth adds authentication metadata to the context.
-func (c *GRPCClient) ctxWithAuth(ctx context.Context, orgID string) (context.Context, error) {
+func (c *GRPCClient) ctxWithAuth(ctx context.Context) (context.Context, error) {
 	var token string
 
 	// Try to get token from config's credentials manager first
@@ -170,7 +167,7 @@ func (c *GRPCClient) UploadAttestations(ctx context.Context, orgID, namespace st
 		return nil, fmt.Errorf("invalid org ID: %w", err)
 	}
 
-	authCtx, err := c.ctxWithAuth(ctx, resolvedOrgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -184,13 +181,13 @@ func (c *GRPCClient) UploadAttestations(ctx context.Context, orgID, namespace st
 		return nil, err
 	}
 
-	results := make([]*UploadResult, len(resp.Results))
-	for i, r := range resp.Results {
+	results := make([]*UploadResult, len(resp.GetResults()))
+	for i, r := range resp.GetResults() {
 		results[i] = &UploadResult{
-			AttestationID: r.AttestationId,
-			ContentHash:   r.ContentHash,
-			Existed:       r.Stored && r.AttestationId != "",
-			Error:         r.Error,
+			AttestationID: r.GetAttestationId(),
+			ContentHash:   r.GetContentHash(),
+			Existed:       r.GetStored() && r.GetAttestationId() != "",
+			Error:         r.GetError(),
 		}
 	}
 
@@ -198,7 +195,7 @@ func (c *GRPCClient) UploadAttestations(ctx context.Context, orgID, namespace st
 }
 
 // GetAttestation retrieves an attestation by ID or hash.
-func (c *GRPCClient) GetAttestation(ctx context.Context, orgID, namespace, id string) (*Attestation, []byte, []byte, error) {
+func (c *GRPCClient) GetAttestation(ctx context.Context, orgID, namespace, id string) (att *Attestation, raw, predicate []byte, err error) {
 	// Resolve orgID - derive from token if not provided
 	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
 	if err != nil {
@@ -210,7 +207,7 @@ func (c *GRPCClient) GetAttestation(ctx context.Context, orgID, namespace, id st
 		return nil, nil, nil, fmt.Errorf("invalid org ID: %w", err)
 	}
 
-	authCtx, err := c.ctxWithAuth(ctx, resolvedOrgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -224,7 +221,7 @@ func (c *GRPCClient) GetAttestation(ctx context.Context, orgID, namespace, id st
 		return nil, nil, nil, err
 	}
 
-	return protoToAttestation(resp.Attestation), resp.RawAttestation, resp.RawPredicate, nil
+	return protoToAttestation(resp.GetAttestation()), resp.GetRawAttestation(), resp.GetRawPredicate(), nil
 }
 
 // GetAttestationRaw retrieves only the raw attestation JSON.
@@ -240,7 +237,7 @@ func (c *GRPCClient) GetAttestationRaw(ctx context.Context, orgID, namespace, id
 		return nil, fmt.Errorf("invalid org ID: %w", err)
 	}
 
-	authCtx, err := c.ctxWithAuth(ctx, resolvedOrgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -254,30 +251,30 @@ func (c *GRPCClient) GetAttestationRaw(ctx context.Context, orgID, namespace, id
 	if err != nil {
 		return nil, err
 	}
-	return resp.RawAttestation, nil
+	return resp.GetRawAttestation(), nil
 }
 
 // GetAttestationPredicate retrieves only the predicate JSON.
 func (c *GRPCClient) GetAttestationPredicate(ctx context.Context, orgID, namespace, id string) ([]byte, error) {
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting auth context: %w", err)
 	}
 
 	resp, err := c.client.GetAttestation(authCtx, &stashv1.GetAttestationRequest{
-		Namespace:  namespace,
-		Identifier: &stashv1.GetAttestationRequest_AttestationId{AttestationId: id},
+		Namespace:     namespace,
+		Identifier:    &stashv1.GetAttestationRequest_AttestationId{AttestationId: id},
 		PredicateOnly: true,
 	})
 	if err != nil {
 		return nil, err
 	}
-	return resp.RawPredicate, nil
+	return resp.GetRawPredicate(), nil
 }
 
 // GetAttestationByHash retrieves an attestation by content hash.
-func (c *GRPCClient) GetAttestationByHash(ctx context.Context, orgID, namespace, hash string) (*Attestation, []byte, []byte, error) {
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+func (c *GRPCClient) GetAttestationByHash(ctx context.Context, orgID, namespace, hash string) (att *Attestation, raw, predicate []byte, err error) {
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -290,12 +287,12 @@ func (c *GRPCClient) GetAttestationByHash(ctx context.Context, orgID, namespace,
 		return nil, nil, nil, err
 	}
 
-	return protoToAttestation(resp.Attestation), resp.RawAttestation, resp.RawPredicate, nil
+	return protoToAttestation(resp.GetAttestation()), resp.GetRawAttestation(), resp.GetRawPredicate(), nil
 }
 
 // GetAttestationByPredicateHash retrieves an attestation by predicate hash.
-func (c *GRPCClient) GetAttestationByPredicateHash(ctx context.Context, orgID, namespace, hash string) (*Attestation, []byte, []byte, error) {
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+func (c *GRPCClient) GetAttestationByPredicateHash(ctx context.Context, orgID, namespace, hash string) (att *Attestation, raw, predicate []byte, err error) {
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, nil, nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -308,7 +305,7 @@ func (c *GRPCClient) GetAttestationByPredicateHash(ctx context.Context, orgID, n
 		return nil, nil, nil, err
 	}
 
-	return protoToAttestation(resp.Attestation), resp.RawAttestation, resp.RawPredicate, nil
+	return protoToAttestation(resp.GetAttestation()), resp.GetRawAttestation(), resp.GetRawPredicate(), nil
 }
 
 // ListAttestations lists attestations with optional filters and pagination.
@@ -344,13 +341,21 @@ func (c *GRPCClient) ListAttestations(ctx context.Context, orgID, namespace stri
 	}
 
 	if cursor != nil {
+		// Clamp to the documented maximum (1000) to avoid overflowing int32
+		limit := cursor.Limit
+		if limit < 0 {
+			limit = 0
+		}
+		if limit > 1000 {
+			limit = 1000
+		}
 		req.Cursor = &stashv1.Cursor{
-			Limit:  int32(cursor.Limit),
+			Limit:  int32(limit),
 			Offset: cursor.Token,
 		}
 	}
 
-	authCtx, err := c.ctxWithAuth(ctx, resolvedOrgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -361,15 +366,15 @@ func (c *GRPCClient) ListAttestations(ctx context.Context, orgID, namespace stri
 	}
 
 	result := &AttestationList{
-		Attestations: make([]*Attestation, len(resp.Attestations)),
+		Attestations: make([]*Attestation, len(resp.GetAttestations())),
 	}
 
-	for i, att := range resp.Attestations {
+	for i, att := range resp.GetAttestations() {
 		result.Attestations[i] = protoToAttestation(att)
 	}
 
-	if resp.NextCursor != nil {
-		result.NextCursor = resp.NextCursor.Offset
+	if resp.GetNextCursor() != nil {
+		result.NextCursor = resp.GetNextCursor().GetOffset()
 	}
 
 	return result, nil
@@ -377,7 +382,7 @@ func (c *GRPCClient) ListAttestations(ctx context.Context, orgID, namespace stri
 
 // DeleteAttestation deletes an attestation by ID or hash.
 func (c *GRPCClient) DeleteAttestation(ctx context.Context, orgID, namespace, id string) error {
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return fmt.Errorf("getting auth context: %w", err)
 	}
@@ -391,7 +396,7 @@ func (c *GRPCClient) DeleteAttestation(ctx context.Context, orgID, namespace, id
 
 // UpdateAttestation updates an attestation (currently not implemented).
 func (c *GRPCClient) UpdateAttestation(ctx context.Context, orgID, namespace, id string, updates map[string]interface{}) error {
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return fmt.Errorf("getting auth context: %w", err)
 	}
@@ -408,7 +413,7 @@ func (c *GRPCClient) UploadPublicKey(ctx context.Context, orgID string, keyData 
 	// orgID is sent via context metadata in GRPC, parameter kept for interface compatibility
 	_ = orgID
 
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return "", fmt.Errorf("getting auth context: %w", err)
 	}
@@ -419,7 +424,7 @@ func (c *GRPCClient) UploadPublicKey(ctx context.Context, orgID string, keyData 
 	if err != nil {
 		return "", err
 	}
-	return resp.KeyId, nil
+	return resp.GetKeyId(), nil
 }
 
 // ListPublicKeys lists all public keys.
@@ -427,7 +432,7 @@ func (c *GRPCClient) ListPublicKeys(ctx context.Context, orgID string) ([]*Publi
 	// orgID is sent via context metadata in GRPC, parameter kept for interface compatibility
 	_ = orgID
 
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -437,12 +442,12 @@ func (c *GRPCClient) ListPublicKeys(ctx context.Context, orgID string) ([]*Publi
 		return nil, err
 	}
 
-	keys := make([]*PublicKey, len(resp.Keys))
-	for i, k := range resp.Keys {
+	keys := make([]*PublicKey, len(resp.GetKeys()))
+	for i, k := range resp.GetKeys() {
 		keys[i] = &PublicKey{
-			KeyID:     k.KeyId,
-			Algorithm: k.Algorithm,
-			CreatedAt: k.CreatedAt.AsTime(),
+			KeyID:     k.GetKeyId(),
+			Algorithm: k.GetAlgorithm(),
+			CreatedAt: k.GetCreatedAt().AsTime(),
 		}
 	}
 
@@ -468,7 +473,7 @@ func (c *GRPCClient) DeletePublicKey(ctx context.Context, orgID, keyID string) e
 	// orgID is sent via context metadata in GRPC, parameter kept for interface compatibility
 	_ = orgID
 
-	authCtx, err := c.ctxWithAuth(ctx, orgID)
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return fmt.Errorf("getting auth context: %w", err)
 	}
@@ -500,8 +505,8 @@ func (c *GRPCClient) DeleteNamespace(ctx context.Context, orgID, name string) er
 }
 
 // HealthCheck checks server health.
-func (c *GRPCClient) HealthCheck(ctx context.Context) (string, map[string]string, error) {
-	authCtx, err := c.ctxWithAuth(ctx, "")
+func (c *GRPCClient) HealthCheck(ctx context.Context) (status string, components map[string]string, err error) {
+	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return "", nil, fmt.Errorf("getting auth context: %w", err)
 	}
@@ -510,5 +515,5 @@ func (c *GRPCClient) HealthCheck(ctx context.Context) (string, map[string]string
 	if err != nil {
 		return "", nil, err
 	}
-	return resp.Status, resp.Components, nil
+	return resp.GetStatus(), resp.GetComponents(), nil
 }
