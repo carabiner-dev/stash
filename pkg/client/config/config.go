@@ -109,12 +109,12 @@ func SaveToken(token string) error {
 	}
 
 	stashDir := filepath.Join(home, ".stash")
-	if err := os.MkdirAll(stashDir, 0700); err != nil {
+	if err := os.MkdirAll(stashDir, 0o700); err != nil {
 		return fmt.Errorf("creating .stash directory: %w", err)
 	}
 
 	tokenPath := filepath.Join(stashDir, "token")
-	if err := os.WriteFile(tokenPath, []byte(token), 0600); err != nil {
+	if err := os.WriteFile(tokenPath, []byte(token), 0o600); err != nil {
 		return fmt.Errorf("writing token file: %w", err)
 	}
 
@@ -183,8 +183,8 @@ func (c *Config) InitializeCredentialsManager(ctx context.Context, orgID string)
 	source, err := credentials.NewServiceTokenSource(
 		req,
 		c.AuthServer,
-		credentials.WithServicePersistence(),        // Enable disk persistence for cross-process caching
-		credentials.WithServiceRefreshBuffer(0.1),   // Refresh at 90% of token lifetime (more conservative)
+		credentials.WithServicePersistence(), // Enable disk persistence for cross-process caching
+		credentials.WithServiceRefreshBuffer(0.1), // Refresh at 90% of token lifetime (more conservative)
 		credentials.WithServiceIdentitySource(identitySource),
 	)
 	if err != nil {

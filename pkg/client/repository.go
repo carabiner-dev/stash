@@ -42,11 +42,13 @@ func NewRepositoryClient(client StashClient, orgID, namespace string) *Repositor
 }
 
 // Verify interface implementations at compile time.
-var _ attestation.Fetcher = (*RepositoryClient)(nil)
-var _ attestation.FetcherBySubject = (*RepositoryClient)(nil)
-var _ attestation.FetcherByPredicateType = (*RepositoryClient)(nil)
-var _ attestation.FetcherByPredicateTypeAndSubject = (*RepositoryClient)(nil)
-var _ attestation.Storer = (*RepositoryClient)(nil)
+var (
+	_ attestation.Fetcher                          = (*RepositoryClient)(nil)
+	_ attestation.FetcherBySubject                 = (*RepositoryClient)(nil)
+	_ attestation.FetcherByPredicateType           = (*RepositoryClient)(nil)
+	_ attestation.FetcherByPredicateTypeAndSubject = (*RepositoryClient)(nil)
+	_ attestation.Storer                           = (*RepositoryClient)(nil)
+)
 
 // Fetch retrieves attestations from the repository.
 // Implements attestation.Fetcher.

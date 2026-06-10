@@ -21,6 +21,7 @@ type Client struct {
 }
 
 // NewClient creates a new Stash client with the given base URL and token.
+//
 // Deprecated: Use NewClientFromConfig for better token management.
 func NewClient(baseURL, token string) *Client {
 	cfg := &config.Config{
@@ -73,7 +74,7 @@ func normalizeNamespace(namespace string) string {
 }
 
 // doRequest performs an HTTP request with authentication.
-func (c *Client) doRequest(ctx context.Context, method, path string, body interface{}, result interface{}) error {
+func (c *Client) doRequest(ctx context.Context, method, path string, body, result interface{}) error {
 	var bodyReader io.Reader
 	if body != nil {
 		data, err := json.Marshal(body)
@@ -110,7 +111,7 @@ func (c *Client) doRequest(ctx context.Context, method, path string, body interf
 	if err != nil {
 		return fmt.Errorf("performing request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	// Read response body
 	respBody, err := io.ReadAll(resp.Body)
@@ -145,7 +146,10 @@ func (c *Client) doRequestRaw(ctx context.Context, method, path string, query ur
 	}
 
 	if len(query) > 0 {
-		u, _ := url.Parse(reqURL)
+		u, err := url.Parse(reqURL)
+		if err != nil {
+			return nil, fmt.Errorf("parsing request URL: %w", err)
+		}
 		u.RawQuery = query.Encode()
 		reqURL = u.String()
 	}
@@ -169,7 +173,7 @@ func (c *Client) doRequestRaw(ctx context.Context, method, path string, query ur
 	if err != nil {
 		return nil, fmt.Errorf("performing request: %w", err)
 	}
-	defer resp.Body.Close()
+	defer resp.Body.Close() //nolint:errcheck
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {

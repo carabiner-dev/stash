@@ -80,5 +80,7 @@ type StashClient interface {
 }
 
 // Ensure both client types implement the interface.
-var _ StashClient = (*Client)(nil)
-var _ StashClient = (*GRPCClient)(nil)
+var (
+	_ StashClient = (*Client)(nil)
+	_ StashClient = (*GRPCClient)(nil)
+)

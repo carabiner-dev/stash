@@ -7,7 +7,6 @@ import (
 	"net/url"
 )
 
-
 // UploadAttestations uploads one or more attestations to the server.
 // Returns a list of upload results, one for each attestation.
 // orgID must be specified - convenience endpoints have been removed.
@@ -60,7 +59,7 @@ func (c *Client) UploadAttestations(ctx context.Context, orgID, namespace string
 // GetAttestation retrieves an attestation by ID or hash.
 // Returns the attestation metadata, raw JSON, and predicate JSON.
 // orgID must be specified - convenience endpoints have been removed.
-func (c *Client) GetAttestation(ctx context.Context, orgID, namespace, id string) (*Attestation, []byte, []byte, error) {
+func (c *Client) GetAttestation(ctx context.Context, orgID, namespace, id string) (att *Attestation, raw, predicate []byte, err error) {
 	if orgID == "" {
 		return nil, nil, nil, fmt.Errorf("orgID is required")
 	}
@@ -123,12 +122,12 @@ func (c *Client) GetAttestationPredicate(ctx context.Context, orgID, namespace, 
 }
 
 // GetAttestationByHash retrieves an attestation by its content hash.
-func (c *Client) GetAttestationByHash(ctx context.Context, orgID, namespace, hash string) (*Attestation, []byte, []byte, error) {
+func (c *Client) GetAttestationByHash(ctx context.Context, orgID, namespace, hash string) (att *Attestation, raw, predicate []byte, err error) {
 	return c.GetAttestation(ctx, orgID, namespace, hash)
 }
 
 // GetAttestationByPredicateHash retrieves an attestation by its predicate hash.
-func (c *Client) GetAttestationByPredicateHash(ctx context.Context, orgID, namespace, hash string) (*Attestation, []byte, []byte, error) {
+func (c *Client) GetAttestationByPredicateHash(ctx context.Context, orgID, namespace, hash string) (att *Attestation, raw, predicate []byte, err error) {
 	return c.GetAttestation(ctx, orgID, namespace, hash)
 }
 

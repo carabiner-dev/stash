@@ -93,22 +93,22 @@ func (f *Filters) toQueryParams(cursor *Cursor) url.Values {
 
 // Attestation represents an attestation metadata.
 type Attestation struct {
-	ID                   string            `json:"id"`
-	OrgID                string            `json:"org_id"`
-	Namespace            string            `json:"namespace"`
-	ContentHash          string            `json:"content_hash"`
-	PredicateHash        string            `json:"predicate_hash"`
-	PredicateType        string            `json:"predicate_type"`
-	Signed               bool              `json:"signed"`
-	Validated            bool              `json:"validated"`
-	ValidationError      string            `json:"validation_error,omitempty"`
-	SignerIdentities     []string          `json:"signer_identities,omitempty"`
-	Subjects             []Subject         `json:"subjects,omitempty"`
-	CreatedAt            time.Time         `json:"created_at"`
-	PredicateTimestamp   *time.Time        `json:"predicate_timestamp,omitempty"`
-	UpdatedAt            time.Time         `json:"updated_at"`
-	RawStoragePath       string            `json:"raw_storage_path,omitempty"`
-	PredicateStoragePath string            `json:"predicate_storage_path,omitempty"`
+	ID                   string     `json:"id"`
+	OrgID                string     `json:"org_id"`
+	Namespace            string     `json:"namespace"`
+	ContentHash          string     `json:"content_hash"`
+	PredicateHash        string     `json:"predicate_hash"`
+	PredicateType        string     `json:"predicate_type"`
+	Signed               bool       `json:"signed"`
+	Validated            bool       `json:"validated"`
+	ValidationError      string     `json:"validation_error,omitempty"`
+	SignerIdentities     []string   `json:"signer_identities,omitempty"`
+	Subjects             []Subject  `json:"subjects,omitempty"`
+	CreatedAt            time.Time  `json:"created_at"`
+	PredicateTimestamp   *time.Time `json:"predicate_timestamp,omitempty"`
+	UpdatedAt            time.Time  `json:"updated_at"`
+	RawStoragePath       string     `json:"raw_storage_path,omitempty"`
+	PredicateStoragePath string     `json:"predicate_storage_path,omitempty"`
 }
 
 // Subject represents an attestation subject.

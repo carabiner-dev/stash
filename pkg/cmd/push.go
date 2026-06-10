@@ -112,12 +112,13 @@ Examples:
 			// Print results
 			successCount := 0
 			for _, result := range results {
-				if result.Error != "" {
+				switch {
+				case result.Error != "":
 					fmt.Printf("Failed: %s\n", result.Error)
-				} else if result.Existed {
+				case result.Existed:
 					fmt.Printf("Already exists: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
 					successCount++
-				} else {
+				default:
 					fmt.Printf("Pushed: %s (hash: %s)\n", result.AttestationID, result.ContentHash)
 					successCount++
 				}

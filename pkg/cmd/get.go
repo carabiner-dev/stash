@@ -4,6 +4,7 @@
 package cmd
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -150,23 +151,11 @@ Examples:
 
 			// Print raw attestation
 			fmt.Println("\n=== Raw Attestation ===")
-			var rawIndented interface{}
-			if err := json.Unmarshal(raw, &rawIndented); err == nil {
-				prettyRaw, _ := json.MarshalIndent(rawIndented, "", "  ")
-				fmt.Println(string(prettyRaw))
-			} else {
-				fmt.Println(string(raw))
-			}
+			printIndentedJSON(raw)
 
 			// Print predicate
 			fmt.Println("\n=== Predicate ===")
-			var predicateIndented interface{}
-			if err := json.Unmarshal(predicate, &predicateIndented); err == nil {
-				prettyPredicate, _ := json.MarshalIndent(predicateIndented, "", "  ")
-				fmt.Println(string(prettyPredicate))
-			} else {
-				fmt.Println(string(predicate))
-			}
+			printIndentedJSON(predicate)
 
 			return nil
 		},
@@ -174,4 +163,15 @@ Examples:
 
 	opts.AddFlags(cmd)
 	parent.AddCommand(cmd)
+}
+
+// printIndentedJSON prints data as indented JSON, falling back to the
+// raw bytes when they are not valid JSON.
+func printIndentedJSON(data []byte) {
+	var buf bytes.Buffer
+	if err := json.Indent(&buf, data, "", "  "); err != nil {
+		fmt.Println(string(data))
+		return
+	}
+	fmt.Println(buf.String())
 }

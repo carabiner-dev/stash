@@ -2,7 +2,6 @@ package client
 
 import (
 	"net/url"
-	"strings"
 
 	stashv1 "github.com/carabiner-dev/stash/api/carabiner/stash/v1"
 )
@@ -14,49 +13,49 @@ func protoToAttestation(pb *stashv1.Attestation) *Attestation {
 	}
 
 	att := &Attestation{
-		ID:               pb.AttestationId,
+		ID:               pb.GetAttestationId(),
 		OrgID:            "", // TODO: Add to proto definition
 		Namespace:        "", // TODO: Add to proto definition
-		ContentHash:      pb.ContentHash,
-		PredicateHash:    pb.PredicateHash,
-		PredicateType:    pb.PredicateType,
-		Signed:           pb.Signed,
-		Validated:        pb.Validated,
-		ValidationError:  pb.ValidationError,
-		SignerIdentities: pb.SignerIdentities,
+		ContentHash:      pb.GetContentHash(),
+		PredicateHash:    pb.GetPredicateHash(),
+		PredicateType:    pb.GetPredicateType(),
+		Signed:           pb.GetSigned(),
+		Validated:        pb.GetValidated(),
+		ValidationError:  pb.GetValidationError(),
+		SignerIdentities: pb.GetSignerIdentities(),
 	}
 
-	if pb.CreatedAt != nil {
-		att.CreatedAt = pb.CreatedAt.AsTime()
+	if pb.GetCreatedAt() != nil {
+		att.CreatedAt = pb.GetCreatedAt().AsTime()
 	}
-	if pb.UpdatedAt != nil {
-		att.UpdatedAt = pb.UpdatedAt.AsTime()
+	if pb.GetUpdatedAt() != nil {
+		att.UpdatedAt = pb.GetUpdatedAt().AsTime()
 	}
-	if pb.PredicateTimestamp != nil {
-		t := pb.PredicateTimestamp.AsTime()
+	if pb.GetPredicateTimestamp() != nil {
+		t := pb.GetPredicateTimestamp().AsTime()
 		att.PredicateTimestamp = &t
 	}
 
 	// Convert subjects
-	att.Subjects = make([]Subject, 0, len(pb.Subjects))
-	for _, s := range pb.Subjects {
+	att.Subjects = make([]Subject, 0, len(pb.GetSubjects()))
+	for _, s := range pb.GetSubjects() {
 		// Convert annotations from Any to string (simplified)
 		annotations := make(map[string]string)
-		for k, v := range s.Annotations {
+		for k, v := range s.GetAnnotations() {
 			if v != nil {
-				annotations[k] = string(v.Value)
+				annotations[k] = string(v.GetValue())
 			}
 		}
 
 		// Proto has digest as map, client stores each algo separately
-		for algo, value := range s.Digest {
+		for algo, value := range s.GetDigest() {
 			att.Subjects = append(att.Subjects, Subject{
-				Name:             s.Name,
+				Name:             s.GetName(),
 				DigestAlgorithm:  algo,
 				DigestValue:      value,
-				URI:              s.Uri,
-				DownloadLocation: s.DownloadLocation,
-				MediaType:        s.MediaType,
+				URI:              s.GetUri(),
+				DownloadLocation: s.GetDownloadLocation(),
+				MediaType:        s.GetMediaType(),
 				Annotations:      annotations,
 			})
 		}
@@ -67,9 +66,6 @@ func protoToAttestation(pb *stashv1.Attestation) *Attestation {
 
 // parseAddress extracts host:port and determines if insecure from a URL.
 func parseAddress(baseURL string) (address string, insecure bool) {
-	// Default values
-	insecure = false
-
 	// Parse the URL
 	u, err := url.Parse(baseURL)
 	if err != nil {
@@ -93,9 +89,4 @@ func parseAddress(baseURL string) (address string, insecure bool) {
 	}
 
 	return host + ":" + port, insecure
-}
-
-// isGRPCAddress checks if an address looks like a gRPC address (host:port without scheme).
-func isGRPCAddress(address string) bool {
-	return !strings.Contains(address, "://")
 }
