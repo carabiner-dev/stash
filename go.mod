@@ -8,7 +8,7 @@ require (
 	github.com/carabiner-dev/command v0.3.1
 	github.com/carabiner-dev/deadrop v0.0.0-20260228173914-d95e9ea2877d
 	github.com/spf13/cobra v1.10.2
-	google.golang.org/grpc v1.81.1
+	google.golang.org/grpc v1.82.0
 	google.golang.org/protobuf v1.36.11
 )
 
