@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -48,8 +49,8 @@ func LoadConfig() (*Config, error) {
 	cfg := DefaultConfig()
 
 	// Load base URL from environment
-	if url := os.Getenv("STASH_URL"); url != "" {
-		cfg.BaseURL = url
+	if baseURL := os.Getenv("STASH_URL"); baseURL != "" {
+		cfg.BaseURL = baseURL
 	}
 
 	// Load auth server from environment
@@ -159,17 +160,26 @@ func (c *Config) InitializeCredentialsManager(ctx context.Context, orgID string)
 		return fmt.Errorf("parsing orgs from identity token: %w", err)
 	}
 
-	// Build exchange request with audience "stash" and resource claims for all orgs
+	// Build the exchange request. Stash's audience is its service URL, and
+	// the token is for exactly the server this client targets, so request the
+	// origin of BaseURL (e.g. https://stash.dev.carabiner.dev). Deriving it
+	// keeps the token's audience precise regardless of environment.
+	audience, err := audienceFromBaseURL(c.BaseURL)
+	if err != nil {
+		return fmt.Errorf("deriving token audience from stash server URL: %w", err)
+	}
 	req := &exchange.ExchangeRequest{
-		Audience: []string{"stash"},
+		Audience: []string{audience},
 	}
 
-	// Add resource claims for all orgs the user has access to
-	// Format: /v1/{orgID}/* - request access to all namespaces in each org
+	// Restrict the token to the user's organizations, as canonical stash
+	// resource URIs (stash://<orgHandle>, the whole stash of each org). The
+	// orgs claim carries handles; the platform narrows this to the user's
+	// actual memberships at mint time.
 	if len(orgs) > 0 {
 		resources := make([]string, len(orgs))
 		for i, org := range orgs {
-			resources[i] = fmt.Sprintf("/v1/%s/*", org)
+			resources[i] = fmt.Sprintf("stash://%s", org)
 		}
 		req.Resource = resources
 	}
@@ -193,6 +203,22 @@ func (c *Config) InitializeCredentialsManager(ctx context.Context, orgID string)
 
 	c.tokenSource = source
 	return nil
+}
+
+// audienceFromBaseURL derives the token audience from the Stash server URL:
+// the scheme://host origin the token will be presented to (e.g.
+// "https://stash.dev.carabiner.dev"), dropping any path, query, or port-less
+// trailing slash. Stash validates a token's audience against its own service
+// URL, so the audience must name exactly the server this client targets.
+func audienceFromBaseURL(baseURL string) (string, error) {
+	u, err := url.Parse(strings.TrimSpace(baseURL))
+	if err != nil {
+		return "", fmt.Errorf("parsing %q: %w", baseURL, err)
+	}
+	if u.Scheme == "" || u.Host == "" {
+		return "", fmt.Errorf("stash server URL %q must be an absolute scheme://host URL", baseURL)
+	}
+	return u.Scheme + "://" + u.Host, nil
 }
 
 // parseOrgsFromToken extracts the orgs claim from a JWT token.
