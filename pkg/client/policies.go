@@ -130,3 +130,78 @@ func (c *Client) GetPolicy(ctx context.Context, orgID, namespace, lineageID stri
 
 	return result.Policy, []byte(result.Raw), nil
 }
+
+// DeletePolicy removes a whole policy lineage, or one version of it when version
+// is non-nil (0 is a valid version, distinct from "whole lineage"), returning
+// the number of versions deleted.
+func (c *Client) DeletePolicy(ctx context.Context, orgID, namespace, lineageID string, version *int64) (int64, error) {
+	if orgID == "" {
+		return 0, fmt.Errorf("orgID is required")
+	}
+
+	ns := normalizeNamespace(namespace)
+	if ns == "" {
+		ns = "_"
+	}
+	path := fmt.Sprintf("/v1/policies/%s/%s/%s", orgID, ns, lineageID)
+	if version != nil {
+		path = fmt.Sprintf("%s?version=%s", path, strconv.FormatInt(*version, 10))
+	}
+
+	var result struct {
+		Deleted int64 `json:"deleted"`
+	}
+	if err := c.doRequest(ctx, "DELETE", path, nil, &result); err != nil {
+		return 0, err
+	}
+	return result.Deleted, nil
+}
+
+// ListPolicies returns one entry per lineage in a namespace, each at its latest
+// version. orgID must be specified.
+func (c *Client) ListPolicies(ctx context.Context, orgID, namespace string) ([]*Policy, error) {
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
+	}
+
+	// Normalize namespace: empty string means default namespace.
+	ns := normalizeNamespace(namespace)
+
+	// If namespace is empty, omit it from URL (uses default namespace).
+	var path string
+	if ns == "" {
+		path = fmt.Sprintf("/v1/policies/%s", orgID)
+	} else {
+		path = fmt.Sprintf("/v1/policies/%s/%s", orgID, ns)
+	}
+
+	var result struct {
+		Policies []*Policy `json:"policies"`
+	}
+	if err := c.doRequest(ctx, "GET", path, nil, &result); err != nil {
+		return nil, err
+	}
+	return result.Policies, nil
+}
+
+// ListPolicyVersions returns every version of one lineage, newest first.
+// orgID must be specified.
+func (c *Client) ListPolicyVersions(ctx context.Context, orgID, namespace, lineageID string) ([]*Policy, error) {
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
+	}
+
+	ns := normalizeNamespace(namespace)
+	if ns == "" {
+		ns = "_"
+	}
+	path := fmt.Sprintf("/v1/policies/%s/%s/%s/versions", orgID, ns, lineageID)
+
+	var result struct {
+		Policies []*Policy `json:"policies"`
+	}
+	if err := c.doRequest(ctx, "GET", path, nil, &result); err != nil {
+		return nil, err
+	}
+	return result.Policies, nil
+}

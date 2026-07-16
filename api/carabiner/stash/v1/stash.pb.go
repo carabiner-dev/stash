@@ -1145,6 +1145,334 @@ func (x *GetPolicyResponse) GetRaw() []byte {
 	return nil
 }
 
+// DeletePolicyRequest removes a lineage or one of its versions.
+type DeletePolicyRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace (empty string = default namespace).
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	// The lineage to delete from.
+	LineageId string `protobuf:"bytes,2,opt,name=lineage_id,json=lineageId,proto3" json:"lineage_id,omitempty"`
+	// The version to delete. When absent the whole lineage (every version) is
+	// deleted; when present only that 0-based version is deleted.
+	Version *int64 `protobuf:"varint,3,opt,name=version,proto3,oneof" json:"version,omitempty"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeletePolicyRequest) Reset() {
+	*x = DeletePolicyRequest{}
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[17]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeletePolicyRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeletePolicyRequest) ProtoMessage() {}
+
+func (x *DeletePolicyRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[17]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeletePolicyRequest.ProtoReflect.Descriptor instead.
+func (*DeletePolicyRequest) Descriptor() ([]byte, []int) {
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{17}
+}
+
+func (x *DeletePolicyRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *DeletePolicyRequest) GetLineageId() string {
+	if x != nil {
+		return x.LineageId
+	}
+	return ""
+}
+
+func (x *DeletePolicyRequest) GetVersion() int64 {
+	if x != nil && x.Version != nil {
+		return *x.Version
+	}
+	return 0
+}
+
+func (x *DeletePolicyRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+// DeletePolicyResponse reports how many versions were deleted.
+type DeletePolicyResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Deleted       int64                  `protobuf:"varint,1,opt,name=deleted,proto3" json:"deleted,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *DeletePolicyResponse) Reset() {
+	*x = DeletePolicyResponse{}
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[18]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *DeletePolicyResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*DeletePolicyResponse) ProtoMessage() {}
+
+func (x *DeletePolicyResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[18]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use DeletePolicyResponse.ProtoReflect.Descriptor instead.
+func (*DeletePolicyResponse) Descriptor() ([]byte, []int) {
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{18}
+}
+
+func (x *DeletePolicyResponse) GetDeleted() int64 {
+	if x != nil {
+		return x.Deleted
+	}
+	return 0
+}
+
+// ListPoliciesRequest lists the lineages in a namespace.
+type ListPoliciesRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace (empty string = default namespace).
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPoliciesRequest) Reset() {
+	*x = ListPoliciesRequest{}
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[19]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPoliciesRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPoliciesRequest) ProtoMessage() {}
+
+func (x *ListPoliciesRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[19]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPoliciesRequest.ProtoReflect.Descriptor instead.
+func (*ListPoliciesRequest) Descriptor() ([]byte, []int) {
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{19}
+}
+
+func (x *ListPoliciesRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *ListPoliciesRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+// ListPoliciesResponse carries one entry per lineage, at its latest version.
+type ListPoliciesResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Policies      []*Policy              `protobuf:"bytes,1,rep,name=policies,proto3" json:"policies,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPoliciesResponse) Reset() {
+	*x = ListPoliciesResponse{}
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[20]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPoliciesResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPoliciesResponse) ProtoMessage() {}
+
+func (x *ListPoliciesResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[20]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPoliciesResponse.ProtoReflect.Descriptor instead.
+func (*ListPoliciesResponse) Descriptor() ([]byte, []int) {
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{20}
+}
+
+func (x *ListPoliciesResponse) GetPolicies() []*Policy {
+	if x != nil {
+		return x.Policies
+	}
+	return nil
+}
+
+// ListPolicyVersionsRequest lists the versions of one lineage.
+type ListPolicyVersionsRequest struct {
+	state protoimpl.MessageState `protogen:"open.v1"`
+	// Namespace (empty string = default namespace).
+	Namespace string `protobuf:"bytes,1,opt,name=namespace,proto3" json:"namespace,omitempty"`
+	// The lineage to list.
+	LineageId string `protobuf:"bytes,2,opt,name=lineage_id,json=lineageId,proto3" json:"lineage_id,omitempty"`
+	// Organization ID (required, must be valid DNS hostname).
+	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPolicyVersionsRequest) Reset() {
+	*x = ListPolicyVersionsRequest{}
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[21]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPolicyVersionsRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPolicyVersionsRequest) ProtoMessage() {}
+
+func (x *ListPolicyVersionsRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[21]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPolicyVersionsRequest.ProtoReflect.Descriptor instead.
+func (*ListPolicyVersionsRequest) Descriptor() ([]byte, []int) {
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{21}
+}
+
+func (x *ListPolicyVersionsRequest) GetNamespace() string {
+	if x != nil {
+		return x.Namespace
+	}
+	return ""
+}
+
+func (x *ListPolicyVersionsRequest) GetLineageId() string {
+	if x != nil {
+		return x.LineageId
+	}
+	return ""
+}
+
+func (x *ListPolicyVersionsRequest) GetOrgId() string {
+	if x != nil {
+		return x.OrgId
+	}
+	return ""
+}
+
+// ListPolicyVersionsResponse carries every version of a lineage, newest first.
+type ListPolicyVersionsResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Policies      []*Policy              `protobuf:"bytes,1,rep,name=policies,proto3" json:"policies,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ListPolicyVersionsResponse) Reset() {
+	*x = ListPolicyVersionsResponse{}
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[22]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ListPolicyVersionsResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ListPolicyVersionsResponse) ProtoMessage() {}
+
+func (x *ListPolicyVersionsResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[22]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ListPolicyVersionsResponse.ProtoReflect.Descriptor instead.
+func (*ListPolicyVersionsResponse) Descriptor() ([]byte, []int) {
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{22}
+}
+
+func (x *ListPolicyVersionsResponse) GetPolicies() []*Policy {
+	if x != nil {
+		return x.Policies
+	}
+	return nil
+}
+
 // HealthCheckRequest checks service health.
 type HealthCheckRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
@@ -1154,7 +1482,7 @@ type HealthCheckRequest struct {
 
 func (x *HealthCheckRequest) Reset() {
 	*x = HealthCheckRequest{}
-	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[17]
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[23]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1166,7 +1494,7 @@ func (x *HealthCheckRequest) String() string {
 func (*HealthCheckRequest) ProtoMessage() {}
 
 func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[17]
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[23]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1179,7 +1507,7 @@ func (x *HealthCheckRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckRequest.ProtoReflect.Descriptor instead.
 func (*HealthCheckRequest) Descriptor() ([]byte, []int) {
-	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{17}
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{23}
 }
 
 // HealthCheckResponse contains health status.
@@ -1193,7 +1521,7 @@ type HealthCheckResponse struct {
 
 func (x *HealthCheckResponse) Reset() {
 	*x = HealthCheckResponse{}
-	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[18]
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[24]
 	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 	ms.StoreMessageInfo(mi)
 }
@@ -1205,7 +1533,7 @@ func (x *HealthCheckResponse) String() string {
 func (*HealthCheckResponse) ProtoMessage() {}
 
 func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[18]
+	mi := &file_carabiner_stash_v1_stash_proto_msgTypes[24]
 	if x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1218,7 +1546,7 @@ func (x *HealthCheckResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use HealthCheckResponse.ProtoReflect.Descriptor instead.
 func (*HealthCheckResponse) Descriptor() ([]byte, []int) {
-	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{18}
+	return file_carabiner_stash_v1_stash_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *HealthCheckResponse) GetStatus() string {
@@ -1323,7 +1651,32 @@ const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"\b_version\"Y\n" +
 	"\x11GetPolicyResponse\x122\n" +
 	"\x06policy\x18\x01 \x01(\v2\x1a.carabiner.stash.v1.PolicyR\x06policy\x12\x10\n" +
-	"\x03raw\x18\x02 \x01(\fR\x03raw\"\x14\n" +
+	"\x03raw\x18\x02 \x01(\fR\x03raw\"\x94\x01\n" +
+	"\x13DeletePolicyRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x1d\n" +
+	"\n" +
+	"lineage_id\x18\x02 \x01(\tR\tlineageId\x12\x1d\n" +
+	"\aversion\x18\x03 \x01(\x03H\x00R\aversion\x88\x01\x01\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgIdB\n" +
+	"\n" +
+	"\b_version\"0\n" +
+	"\x14DeletePolicyResponse\x12\x18\n" +
+	"\adeleted\x18\x01 \x01(\x03R\adeleted\"J\n" +
+	"\x13ListPoliciesRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"N\n" +
+	"\x14ListPoliciesResponse\x126\n" +
+	"\bpolicies\x18\x01 \x03(\v2\x1a.carabiner.stash.v1.PolicyR\bpolicies\"o\n" +
+	"\x19ListPolicyVersionsRequest\x12\x1c\n" +
+	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12\x1d\n" +
+	"\n" +
+	"lineage_id\x18\x02 \x01(\tR\tlineageId\x12\x15\n" +
+	"\x06org_id\x18\n" +
+	" \x01(\tR\x05orgId\"T\n" +
+	"\x1aListPolicyVersionsResponse\x126\n" +
+	"\bpolicies\x18\x01 \x03(\v2\x1a.carabiner.stash.v1.PolicyR\bpolicies\"\x14\n" +
 	"\x12HealthCheckRequest\"\xc5\x01\n" +
 	"\x13HealthCheckResponse\x12\x16\n" +
 	"\x06status\x18\x01 \x01(\tR\x06status\x12W\n" +
@@ -1332,8 +1685,7 @@ const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"components\x1a=\n" +
 	"\x0fComponentsEntry\x12\x10\n" +
 	"\x03key\x18\x01 \x01(\tR\x03key\x12\x14\n" +
-	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\x80\n" +
-	"\n" +
+	"\x05value\x18\x02 \x01(\tR\x05value:\x028\x012\xbb\f\n" +
 	"\fStashService\x12s\n" +
 	"\x12UploadAttestations\x12-.carabiner.stash.v1.UploadAttestationsRequest\x1a..carabiner.stash.v1.UploadAttestationsResponse\x12g\n" +
 	"\x0eGetAttestation\x12).carabiner.stash.v1.GetAttestationRequest\x1a*.carabiner.stash.v1.GetAttestationResponse\x12m\n" +
@@ -1345,7 +1697,10 @@ const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"\x0eListPublicKeys\x12).carabiner.stash.v1.ListPublicKeysRequest\x1a*.carabiner.stash.v1.ListPublicKeysResponse\x12a\n" +
 	"\fPushPolicies\x12'.carabiner.stash.v1.PushPoliciesRequest\x1a(.carabiner.stash.v1.PushPoliciesResponse\x12a\n" +
 	"\fAppendPolicy\x12'.carabiner.stash.v1.AppendPolicyRequest\x1a(.carabiner.stash.v1.AppendPolicyResponse\x12X\n" +
-	"\tGetPolicy\x12$.carabiner.stash.v1.GetPolicyRequest\x1a%.carabiner.stash.v1.GetPolicyResponse\x12^\n" +
+	"\tGetPolicy\x12$.carabiner.stash.v1.GetPolicyRequest\x1a%.carabiner.stash.v1.GetPolicyResponse\x12a\n" +
+	"\fDeletePolicy\x12'.carabiner.stash.v1.DeletePolicyRequest\x1a(.carabiner.stash.v1.DeletePolicyResponse\x12a\n" +
+	"\fListPolicies\x12'.carabiner.stash.v1.ListPoliciesRequest\x1a(.carabiner.stash.v1.ListPoliciesResponse\x12s\n" +
+	"\x12ListPolicyVersions\x12-.carabiner.stash.v1.ListPolicyVersionsRequest\x1a..carabiner.stash.v1.ListPolicyVersionsResponse\x12^\n" +
 	"\vHealthCheck\x12&.carabiner.stash.v1.HealthCheckRequest\x1a'.carabiner.stash.v1.HealthCheckResponseB\xc9\x01\n" +
 	"\x16com.carabiner.stash.v1B\n" +
 	"StashProtoP\x01Z9github.com/carabiner-dev/stash/carabiner/stash/v1;stashv1\xa2\x02\x03CSX\xaa\x02\x12Carabiner.Stash.V1\xca\x02\x12Carabiner\\Stash\\V1\xe2\x02\x1eCarabiner\\Stash\\V1\\GPBMetadata\xea\x02\x14Carabiner::Stash::V1b\x06proto3"
@@ -1362,7 +1717,7 @@ func file_carabiner_stash_v1_stash_proto_rawDescGZIP() []byte {
 	return file_carabiner_stash_v1_stash_proto_rawDescData
 }
 
-var file_carabiner_stash_v1_stash_proto_msgTypes = make([]protoimpl.MessageInfo, 20)
+var file_carabiner_stash_v1_stash_proto_msgTypes = make([]protoimpl.MessageInfo, 26)
 var file_carabiner_stash_v1_stash_proto_goTypes = []any{
 	(*UploadAttestationsRequest)(nil),  // 0: carabiner.stash.v1.UploadAttestationsRequest
 	(*UploadAttestationsResponse)(nil), // 1: carabiner.stash.v1.UploadAttestationsResponse
@@ -1381,61 +1736,75 @@ var file_carabiner_stash_v1_stash_proto_goTypes = []any{
 	(*AppendPolicyResponse)(nil),       // 14: carabiner.stash.v1.AppendPolicyResponse
 	(*GetPolicyRequest)(nil),           // 15: carabiner.stash.v1.GetPolicyRequest
 	(*GetPolicyResponse)(nil),          // 16: carabiner.stash.v1.GetPolicyResponse
-	(*HealthCheckRequest)(nil),         // 17: carabiner.stash.v1.HealthCheckRequest
-	(*HealthCheckResponse)(nil),        // 18: carabiner.stash.v1.HealthCheckResponse
-	nil,                                // 19: carabiner.stash.v1.HealthCheckResponse.ComponentsEntry
-	(*Attestation)(nil),                // 20: carabiner.stash.v1.Attestation
-	(*Filters)(nil),                    // 21: carabiner.stash.v1.Filters
-	(*Cursor)(nil),                     // 22: carabiner.stash.v1.Cursor
-	(*PolicyResult)(nil),               // 23: carabiner.stash.v1.PolicyResult
-	(*Policy)(nil),                     // 24: carabiner.stash.v1.Policy
-	(*UploadPublicKeyRequest)(nil),     // 25: carabiner.stash.v1.UploadPublicKeyRequest
-	(*DeletePublicKeyRequest)(nil),     // 26: carabiner.stash.v1.DeletePublicKeyRequest
-	(*ListPublicKeysRequest)(nil),      // 27: carabiner.stash.v1.ListPublicKeysRequest
-	(*UploadPublicKeyResponse)(nil),    // 28: carabiner.stash.v1.UploadPublicKeyResponse
-	(*DeletePublicKeyResponse)(nil),    // 29: carabiner.stash.v1.DeletePublicKeyResponse
-	(*ListPublicKeysResponse)(nil),     // 30: carabiner.stash.v1.ListPublicKeysResponse
+	(*DeletePolicyRequest)(nil),        // 17: carabiner.stash.v1.DeletePolicyRequest
+	(*DeletePolicyResponse)(nil),       // 18: carabiner.stash.v1.DeletePolicyResponse
+	(*ListPoliciesRequest)(nil),        // 19: carabiner.stash.v1.ListPoliciesRequest
+	(*ListPoliciesResponse)(nil),       // 20: carabiner.stash.v1.ListPoliciesResponse
+	(*ListPolicyVersionsRequest)(nil),  // 21: carabiner.stash.v1.ListPolicyVersionsRequest
+	(*ListPolicyVersionsResponse)(nil), // 22: carabiner.stash.v1.ListPolicyVersionsResponse
+	(*HealthCheckRequest)(nil),         // 23: carabiner.stash.v1.HealthCheckRequest
+	(*HealthCheckResponse)(nil),        // 24: carabiner.stash.v1.HealthCheckResponse
+	nil,                                // 25: carabiner.stash.v1.HealthCheckResponse.ComponentsEntry
+	(*Attestation)(nil),                // 26: carabiner.stash.v1.Attestation
+	(*Filters)(nil),                    // 27: carabiner.stash.v1.Filters
+	(*Cursor)(nil),                     // 28: carabiner.stash.v1.Cursor
+	(*PolicyResult)(nil),               // 29: carabiner.stash.v1.PolicyResult
+	(*Policy)(nil),                     // 30: carabiner.stash.v1.Policy
+	(*UploadPublicKeyRequest)(nil),     // 31: carabiner.stash.v1.UploadPublicKeyRequest
+	(*DeletePublicKeyRequest)(nil),     // 32: carabiner.stash.v1.DeletePublicKeyRequest
+	(*ListPublicKeysRequest)(nil),      // 33: carabiner.stash.v1.ListPublicKeysRequest
+	(*UploadPublicKeyResponse)(nil),    // 34: carabiner.stash.v1.UploadPublicKeyResponse
+	(*DeletePublicKeyResponse)(nil),    // 35: carabiner.stash.v1.DeletePublicKeyResponse
+	(*ListPublicKeysResponse)(nil),     // 36: carabiner.stash.v1.ListPublicKeysResponse
 }
 var file_carabiner_stash_v1_stash_proto_depIdxs = []int32{
 	2,  // 0: carabiner.stash.v1.UploadAttestationsResponse.results:type_name -> carabiner.stash.v1.AttestationResult
-	20, // 1: carabiner.stash.v1.GetAttestationResponse.attestation:type_name -> carabiner.stash.v1.Attestation
-	21, // 2: carabiner.stash.v1.ListAttestationsRequest.filters:type_name -> carabiner.stash.v1.Filters
-	22, // 3: carabiner.stash.v1.ListAttestationsRequest.cursor:type_name -> carabiner.stash.v1.Cursor
-	20, // 4: carabiner.stash.v1.ListAttestationsResponse.attestations:type_name -> carabiner.stash.v1.Attestation
-	22, // 5: carabiner.stash.v1.ListAttestationsResponse.next_cursor:type_name -> carabiner.stash.v1.Cursor
-	23, // 6: carabiner.stash.v1.PushPoliciesResponse.results:type_name -> carabiner.stash.v1.PolicyResult
-	23, // 7: carabiner.stash.v1.AppendPolicyResponse.result:type_name -> carabiner.stash.v1.PolicyResult
-	24, // 8: carabiner.stash.v1.GetPolicyResponse.policy:type_name -> carabiner.stash.v1.Policy
-	19, // 9: carabiner.stash.v1.HealthCheckResponse.components:type_name -> carabiner.stash.v1.HealthCheckResponse.ComponentsEntry
-	0,  // 10: carabiner.stash.v1.StashService.UploadAttestations:input_type -> carabiner.stash.v1.UploadAttestationsRequest
-	3,  // 11: carabiner.stash.v1.StashService.GetAttestation:input_type -> carabiner.stash.v1.GetAttestationRequest
-	5,  // 12: carabiner.stash.v1.StashService.ListAttestations:input_type -> carabiner.stash.v1.ListAttestationsRequest
-	7,  // 13: carabiner.stash.v1.StashService.DeleteAttestation:input_type -> carabiner.stash.v1.DeleteAttestationRequest
-	9,  // 14: carabiner.stash.v1.StashService.UpdateAttestation:input_type -> carabiner.stash.v1.UpdateAttestationRequest
-	25, // 15: carabiner.stash.v1.StashService.UploadPublicKey:input_type -> carabiner.stash.v1.UploadPublicKeyRequest
-	26, // 16: carabiner.stash.v1.StashService.DeletePublicKey:input_type -> carabiner.stash.v1.DeletePublicKeyRequest
-	27, // 17: carabiner.stash.v1.StashService.ListPublicKeys:input_type -> carabiner.stash.v1.ListPublicKeysRequest
-	11, // 18: carabiner.stash.v1.StashService.PushPolicies:input_type -> carabiner.stash.v1.PushPoliciesRequest
-	13, // 19: carabiner.stash.v1.StashService.AppendPolicy:input_type -> carabiner.stash.v1.AppendPolicyRequest
-	15, // 20: carabiner.stash.v1.StashService.GetPolicy:input_type -> carabiner.stash.v1.GetPolicyRequest
-	17, // 21: carabiner.stash.v1.StashService.HealthCheck:input_type -> carabiner.stash.v1.HealthCheckRequest
-	1,  // 22: carabiner.stash.v1.StashService.UploadAttestations:output_type -> carabiner.stash.v1.UploadAttestationsResponse
-	4,  // 23: carabiner.stash.v1.StashService.GetAttestation:output_type -> carabiner.stash.v1.GetAttestationResponse
-	6,  // 24: carabiner.stash.v1.StashService.ListAttestations:output_type -> carabiner.stash.v1.ListAttestationsResponse
-	8,  // 25: carabiner.stash.v1.StashService.DeleteAttestation:output_type -> carabiner.stash.v1.DeleteAttestationResponse
-	10, // 26: carabiner.stash.v1.StashService.UpdateAttestation:output_type -> carabiner.stash.v1.UpdateAttestationResponse
-	28, // 27: carabiner.stash.v1.StashService.UploadPublicKey:output_type -> carabiner.stash.v1.UploadPublicKeyResponse
-	29, // 28: carabiner.stash.v1.StashService.DeletePublicKey:output_type -> carabiner.stash.v1.DeletePublicKeyResponse
-	30, // 29: carabiner.stash.v1.StashService.ListPublicKeys:output_type -> carabiner.stash.v1.ListPublicKeysResponse
-	12, // 30: carabiner.stash.v1.StashService.PushPolicies:output_type -> carabiner.stash.v1.PushPoliciesResponse
-	14, // 31: carabiner.stash.v1.StashService.AppendPolicy:output_type -> carabiner.stash.v1.AppendPolicyResponse
-	16, // 32: carabiner.stash.v1.StashService.GetPolicy:output_type -> carabiner.stash.v1.GetPolicyResponse
-	18, // 33: carabiner.stash.v1.StashService.HealthCheck:output_type -> carabiner.stash.v1.HealthCheckResponse
-	22, // [22:34] is the sub-list for method output_type
-	10, // [10:22] is the sub-list for method input_type
-	10, // [10:10] is the sub-list for extension type_name
-	10, // [10:10] is the sub-list for extension extendee
-	0,  // [0:10] is the sub-list for field type_name
+	26, // 1: carabiner.stash.v1.GetAttestationResponse.attestation:type_name -> carabiner.stash.v1.Attestation
+	27, // 2: carabiner.stash.v1.ListAttestationsRequest.filters:type_name -> carabiner.stash.v1.Filters
+	28, // 3: carabiner.stash.v1.ListAttestationsRequest.cursor:type_name -> carabiner.stash.v1.Cursor
+	26, // 4: carabiner.stash.v1.ListAttestationsResponse.attestations:type_name -> carabiner.stash.v1.Attestation
+	28, // 5: carabiner.stash.v1.ListAttestationsResponse.next_cursor:type_name -> carabiner.stash.v1.Cursor
+	29, // 6: carabiner.stash.v1.PushPoliciesResponse.results:type_name -> carabiner.stash.v1.PolicyResult
+	29, // 7: carabiner.stash.v1.AppendPolicyResponse.result:type_name -> carabiner.stash.v1.PolicyResult
+	30, // 8: carabiner.stash.v1.GetPolicyResponse.policy:type_name -> carabiner.stash.v1.Policy
+	30, // 9: carabiner.stash.v1.ListPoliciesResponse.policies:type_name -> carabiner.stash.v1.Policy
+	30, // 10: carabiner.stash.v1.ListPolicyVersionsResponse.policies:type_name -> carabiner.stash.v1.Policy
+	25, // 11: carabiner.stash.v1.HealthCheckResponse.components:type_name -> carabiner.stash.v1.HealthCheckResponse.ComponentsEntry
+	0,  // 12: carabiner.stash.v1.StashService.UploadAttestations:input_type -> carabiner.stash.v1.UploadAttestationsRequest
+	3,  // 13: carabiner.stash.v1.StashService.GetAttestation:input_type -> carabiner.stash.v1.GetAttestationRequest
+	5,  // 14: carabiner.stash.v1.StashService.ListAttestations:input_type -> carabiner.stash.v1.ListAttestationsRequest
+	7,  // 15: carabiner.stash.v1.StashService.DeleteAttestation:input_type -> carabiner.stash.v1.DeleteAttestationRequest
+	9,  // 16: carabiner.stash.v1.StashService.UpdateAttestation:input_type -> carabiner.stash.v1.UpdateAttestationRequest
+	31, // 17: carabiner.stash.v1.StashService.UploadPublicKey:input_type -> carabiner.stash.v1.UploadPublicKeyRequest
+	32, // 18: carabiner.stash.v1.StashService.DeletePublicKey:input_type -> carabiner.stash.v1.DeletePublicKeyRequest
+	33, // 19: carabiner.stash.v1.StashService.ListPublicKeys:input_type -> carabiner.stash.v1.ListPublicKeysRequest
+	11, // 20: carabiner.stash.v1.StashService.PushPolicies:input_type -> carabiner.stash.v1.PushPoliciesRequest
+	13, // 21: carabiner.stash.v1.StashService.AppendPolicy:input_type -> carabiner.stash.v1.AppendPolicyRequest
+	15, // 22: carabiner.stash.v1.StashService.GetPolicy:input_type -> carabiner.stash.v1.GetPolicyRequest
+	17, // 23: carabiner.stash.v1.StashService.DeletePolicy:input_type -> carabiner.stash.v1.DeletePolicyRequest
+	19, // 24: carabiner.stash.v1.StashService.ListPolicies:input_type -> carabiner.stash.v1.ListPoliciesRequest
+	21, // 25: carabiner.stash.v1.StashService.ListPolicyVersions:input_type -> carabiner.stash.v1.ListPolicyVersionsRequest
+	23, // 26: carabiner.stash.v1.StashService.HealthCheck:input_type -> carabiner.stash.v1.HealthCheckRequest
+	1,  // 27: carabiner.stash.v1.StashService.UploadAttestations:output_type -> carabiner.stash.v1.UploadAttestationsResponse
+	4,  // 28: carabiner.stash.v1.StashService.GetAttestation:output_type -> carabiner.stash.v1.GetAttestationResponse
+	6,  // 29: carabiner.stash.v1.StashService.ListAttestations:output_type -> carabiner.stash.v1.ListAttestationsResponse
+	8,  // 30: carabiner.stash.v1.StashService.DeleteAttestation:output_type -> carabiner.stash.v1.DeleteAttestationResponse
+	10, // 31: carabiner.stash.v1.StashService.UpdateAttestation:output_type -> carabiner.stash.v1.UpdateAttestationResponse
+	34, // 32: carabiner.stash.v1.StashService.UploadPublicKey:output_type -> carabiner.stash.v1.UploadPublicKeyResponse
+	35, // 33: carabiner.stash.v1.StashService.DeletePublicKey:output_type -> carabiner.stash.v1.DeletePublicKeyResponse
+	36, // 34: carabiner.stash.v1.StashService.ListPublicKeys:output_type -> carabiner.stash.v1.ListPublicKeysResponse
+	12, // 35: carabiner.stash.v1.StashService.PushPolicies:output_type -> carabiner.stash.v1.PushPoliciesResponse
+	14, // 36: carabiner.stash.v1.StashService.AppendPolicy:output_type -> carabiner.stash.v1.AppendPolicyResponse
+	16, // 37: carabiner.stash.v1.StashService.GetPolicy:output_type -> carabiner.stash.v1.GetPolicyResponse
+	18, // 38: carabiner.stash.v1.StashService.DeletePolicy:output_type -> carabiner.stash.v1.DeletePolicyResponse
+	20, // 39: carabiner.stash.v1.StashService.ListPolicies:output_type -> carabiner.stash.v1.ListPoliciesResponse
+	22, // 40: carabiner.stash.v1.StashService.ListPolicyVersions:output_type -> carabiner.stash.v1.ListPolicyVersionsResponse
+	24, // 41: carabiner.stash.v1.StashService.HealthCheck:output_type -> carabiner.stash.v1.HealthCheckResponse
+	27, // [27:42] is the sub-list for method output_type
+	12, // [12:27] is the sub-list for method input_type
+	12, // [12:12] is the sub-list for extension type_name
+	12, // [12:12] is the sub-list for extension extendee
+	0,  // [0:12] is the sub-list for field type_name
 }
 
 func init() { file_carabiner_stash_v1_stash_proto_init() }
@@ -1457,13 +1826,14 @@ func file_carabiner_stash_v1_stash_proto_init() {
 		(*DeleteAttestationRequest_ContentHash)(nil),
 	}
 	file_carabiner_stash_v1_stash_proto_msgTypes[15].OneofWrappers = []any{}
+	file_carabiner_stash_v1_stash_proto_msgTypes[17].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_carabiner_stash_v1_stash_proto_rawDesc), len(file_carabiner_stash_v1_stash_proto_rawDesc)),
 			NumEnums:      0,
-			NumMessages:   20,
+			NumMessages:   26,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

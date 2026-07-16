@@ -40,6 +40,14 @@ const (
 
 	markVerified   = "✓"
 	markUnverified = "✗"
+
+	// Shared placeholder labels for the list tables. The server only records
+	// signer identities it verified, so an absent one means either nothing
+	// signed the document (labelUnsigned) or a signature did not check out
+	// (labelUnverified); labelNotDefined marks a missing predicate type.
+	labelNotDefined = "[not defined]"
+	labelUnsigned   = "[unsigned]"
+	labelUnverified = "[unverified]"
 )
 
 // listBorderSet returns the border glyphs for the list table: horizontal runs
@@ -92,7 +100,7 @@ func buildListRows(atts []*client.Attestation, now time.Time) []listRow {
 
 		predType := att.PredicateType
 		if predType == "" {
-			predType = "[not defined]"
+			predType = labelNotDefined
 		}
 
 		subjects := subjectSlugs(att)
@@ -159,9 +167,9 @@ func verifiedMark(att *client.Attestation) string {
 // this, or something did and its signature did not check out.
 func noSignerLabel(att *client.Attestation) string {
 	if att.Signed {
-		return "[unverified]"
+		return labelUnverified
 	}
-	return "[unsigned]"
+	return labelUnsigned
 }
 
 // formatCreated renders a timestamp for the fixed-width CREATED column. Within

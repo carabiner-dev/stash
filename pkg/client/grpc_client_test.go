@@ -34,6 +34,16 @@ type captureServer struct {
 	appendPolicyResp *stashv1.AppendPolicyResponse
 	getPolicyReq     *stashv1.GetPolicyRequest
 	getPolicyResp    *stashv1.GetPolicyResponse
+	deletePolicyReq  *stashv1.DeletePolicyRequest
+	deletePolicyResp *stashv1.DeletePolicyResponse
+}
+
+func (s *captureServer) DeletePolicy(_ context.Context, req *stashv1.DeletePolicyRequest) (*stashv1.DeletePolicyResponse, error) {
+	s.deletePolicyReq = req
+	if s.deletePolicyResp != nil {
+		return s.deletePolicyResp, nil
+	}
+	return &stashv1.DeletePolicyResponse{}, nil
 }
 
 func (s *captureServer) UploadAttestations(_ context.Context, req *stashv1.UploadAttestationsRequest) (*stashv1.UploadAttestationsResponse, error) {
@@ -306,3 +316,33 @@ func TestGRPCGetPolicyPassesVersion(t *testing.T) {
 		}
 	})
 }
+
+func TestGRPCDeletePolicyPassesVersionAndOrg(t *testing.T) {
+	c, capture := newBufconnClient(t)
+	capture.deletePolicyResp = &stashv1.DeletePolicyResponse{Deleted: 3}
+
+	// Whole lineage (nil version).
+	n, err := c.DeletePolicy(context.Background(), testOrgID, "prod", "lin-1", nil)
+	if err != nil {
+		t.Fatalf("DeletePolicy whole: %v", err)
+	}
+	if n != 3 {
+		t.Errorf("deleted = %d, want 3", n)
+	}
+	if capture.deletePolicyReq.GetOrgId() != testOrgID {
+		t.Errorf("org_id = %q, want %q", capture.deletePolicyReq.GetOrgId(), testOrgID)
+	}
+	if capture.deletePolicyReq.Version != nil {
+		t.Errorf("whole-lineage delete should send no version, got %v", capture.deletePolicyReq.GetVersion())
+	}
+
+	// Specific version 0 (must be sent, distinct from nil).
+	if _, err := c.DeletePolicy(context.Background(), testOrgID, "prod", "lin-1", ptrInt64(0)); err != nil {
+		t.Fatalf("DeletePolicy v0: %v", err)
+	}
+	if capture.deletePolicyReq.Version == nil || capture.deletePolicyReq.GetVersion() != 0 {
+		t.Errorf("version = %v, want an explicit 0", capture.deletePolicyReq.Version)
+	}
+}
+
+func ptrInt64(v int64) *int64 { return &v }

@@ -30,6 +30,9 @@ const (
 	StashService_PushPolicies_FullMethodName       = "/carabiner.stash.v1.StashService/PushPolicies"
 	StashService_AppendPolicy_FullMethodName       = "/carabiner.stash.v1.StashService/AppendPolicy"
 	StashService_GetPolicy_FullMethodName          = "/carabiner.stash.v1.StashService/GetPolicy"
+	StashService_DeletePolicy_FullMethodName       = "/carabiner.stash.v1.StashService/DeletePolicy"
+	StashService_ListPolicies_FullMethodName       = "/carabiner.stash.v1.StashService/ListPolicies"
+	StashService_ListPolicyVersions_FullMethodName = "/carabiner.stash.v1.StashService/ListPolicyVersions"
 	StashService_HealthCheck_FullMethodName        = "/carabiner.stash.v1.StashService/HealthCheck"
 )
 
@@ -65,6 +68,15 @@ type StashServiceClient interface {
 	// GetPolicy retrieves one version of a policy lineage, or its latest version
 	// when no version is given.
 	GetPolicy(ctx context.Context, in *GetPolicyRequest, opts ...grpc.CallOption) (*GetPolicyResponse, error)
+	// DeletePolicy removes a whole policy lineage, or one version of it when a
+	// version is given. Deleting the current head makes the previous version the
+	// lineage's latest.
+	DeletePolicy(ctx context.Context, in *DeletePolicyRequest, opts ...grpc.CallOption) (*DeletePolicyResponse, error)
+	// ListPolicies lists the policy lineages in a namespace, each as its latest
+	// version.
+	ListPolicies(ctx context.Context, in *ListPoliciesRequest, opts ...grpc.CallOption) (*ListPoliciesResponse, error)
+	// ListPolicyVersions lists every version of one policy lineage, newest first.
+	ListPolicyVersions(ctx context.Context, in *ListPolicyVersionsRequest, opts ...grpc.CallOption) (*ListPolicyVersionsResponse, error)
 	// HealthCheck checks service health.
 	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
@@ -187,6 +199,36 @@ func (c *stashServiceClient) GetPolicy(ctx context.Context, in *GetPolicyRequest
 	return out, nil
 }
 
+func (c *stashServiceClient) DeletePolicy(ctx context.Context, in *DeletePolicyRequest, opts ...grpc.CallOption) (*DeletePolicyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeletePolicyResponse)
+	err := c.cc.Invoke(ctx, StashService_DeletePolicy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) ListPolicies(ctx context.Context, in *ListPoliciesRequest, opts ...grpc.CallOption) (*ListPoliciesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPoliciesResponse)
+	err := c.cc.Invoke(ctx, StashService_ListPolicies_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) ListPolicyVersions(ctx context.Context, in *ListPolicyVersionsRequest, opts ...grpc.CallOption) (*ListPolicyVersionsResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListPolicyVersionsResponse)
+	err := c.cc.Invoke(ctx, StashService_ListPolicyVersions_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *stashServiceClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(HealthCheckResponse)
@@ -229,6 +271,15 @@ type StashServiceServer interface {
 	// GetPolicy retrieves one version of a policy lineage, or its latest version
 	// when no version is given.
 	GetPolicy(context.Context, *GetPolicyRequest) (*GetPolicyResponse, error)
+	// DeletePolicy removes a whole policy lineage, or one version of it when a
+	// version is given. Deleting the current head makes the previous version the
+	// lineage's latest.
+	DeletePolicy(context.Context, *DeletePolicyRequest) (*DeletePolicyResponse, error)
+	// ListPolicies lists the policy lineages in a namespace, each as its latest
+	// version.
+	ListPolicies(context.Context, *ListPoliciesRequest) (*ListPoliciesResponse, error)
+	// ListPolicyVersions lists every version of one policy lineage, newest first.
+	ListPolicyVersions(context.Context, *ListPolicyVersionsRequest) (*ListPolicyVersionsResponse, error)
 	// HealthCheck checks service health.
 	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedStashServiceServer()
@@ -273,6 +324,15 @@ func (UnimplementedStashServiceServer) AppendPolicy(context.Context, *AppendPoli
 }
 func (UnimplementedStashServiceServer) GetPolicy(context.Context, *GetPolicyRequest) (*GetPolicyResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetPolicy not implemented")
+}
+func (UnimplementedStashServiceServer) DeletePolicy(context.Context, *DeletePolicyRequest) (*DeletePolicyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeletePolicy not implemented")
+}
+func (UnimplementedStashServiceServer) ListPolicies(context.Context, *ListPoliciesRequest) (*ListPoliciesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPolicies not implemented")
+}
+func (UnimplementedStashServiceServer) ListPolicyVersions(context.Context, *ListPolicyVersionsRequest) (*ListPolicyVersionsResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListPolicyVersions not implemented")
 }
 func (UnimplementedStashServiceServer) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method HealthCheck not implemented")
@@ -496,6 +556,60 @@ func _StashService_GetPolicy_Handler(srv interface{}, ctx context.Context, dec f
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StashService_DeletePolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeletePolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).DeletePolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_DeletePolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).DeletePolicy(ctx, req.(*DeletePolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_ListPolicies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPoliciesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).ListPolicies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_ListPolicies_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).ListPolicies(ctx, req.(*ListPoliciesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_ListPolicyVersions_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListPolicyVersionsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).ListPolicyVersions(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_ListPolicyVersions_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).ListPolicyVersions(ctx, req.(*ListPolicyVersionsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StashService_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HealthCheckRequest)
 	if err := dec(in); err != nil {
@@ -564,6 +678,18 @@ var StashService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetPolicy",
 			Handler:    _StashService_GetPolicy_Handler,
+		},
+		{
+			MethodName: "DeletePolicy",
+			Handler:    _StashService_DeletePolicy_Handler,
+		},
+		{
+			MethodName: "ListPolicies",
+			Handler:    _StashService_ListPolicies_Handler,
+		},
+		{
+			MethodName: "ListPolicyVersions",
+			Handler:    _StashService_ListPolicyVersions_Handler,
 		},
 		{
 			MethodName: "HealthCheck",
