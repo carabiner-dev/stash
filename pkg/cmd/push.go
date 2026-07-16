@@ -4,16 +4,48 @@
 package cmd
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"os"
+	"slices"
 
 	"github.com/carabiner-dev/command"
 	"github.com/spf13/cobra"
+
+	"github.com/carabiner-dev/stash/pkg/client"
 )
 
 var _ command.OptionsSet = (*PushOptions)(nil)
+
+// maxPushBatch is the most attestations the server accepts in one upload.
+// Larger inputs are split across requests.
+const maxPushBatch = 100
+
+// splitAttestations reads every attestation in r.
+//
+// An input may hold a single attestation or many, one per line as JSON Lines.
+// Decoding successive JSON values covers both without having to detect which
+// it is: whitespace between values is insignificant to the decoder, so a
+// pretty-printed attestation spanning many lines reads as one value, while a
+// JSON Lines stream reads as one value per line. Splitting on lines instead
+// would break the former.
+func splitAttestations(r io.Reader) ([][]byte, error) {
+	decoder := json.NewDecoder(r)
+
+	var attestations [][]byte
+	for {
+		var raw json.RawMessage
+		if err := decoder.Decode(&raw); err != nil {
+			if errors.Is(err, io.EOF) {
+				return attestations, nil
+			}
+			return nil, fmt.Errorf("parsing attestation %d: %w", len(attestations)+1, err)
+		}
+		attestations = append(attestations, raw)
+	}
+}
 
 // PushOptions holds the options for the push command.
 type PushOptions struct {
@@ -53,13 +85,20 @@ func AddPush(parent *cobra.Command) {
 		Short: "Push attestations to Stash",
 		Long: `Push one or more attestations to the Stash server.
 
+Each file may hold a single attestation or several, one per line in JSON Lines
+format; every attestation in every file is uploaded. Inputs larger than the
+server's per-request limit are uploaded in batches.
+
 Examples:
   # Push from files
   stash push attestation1.json attestation2.json
 
+  # Push every attestation in a JSON Lines file
+  stash push attestations.jsonl
+
   # Push from stdin
   stash push --stdin < attestation.json
-  cat attestation.json | stash push --stdin`,
+  cat attestations.jsonl | stash push --stdin`,
 		PreRunE: func(cmd *cobra.Command, args []string) error {
 			return opts.Validate()
 		},
@@ -82,11 +121,11 @@ Examples:
 
 			if opts.Stdin {
 				// Read from stdin
-				data, err := io.ReadAll(os.Stdin)
+				atts, err := splitAttestations(os.Stdin)
 				if err != nil {
 					return fmt.Errorf("reading stdin: %w", err)
 				}
-				attestations = append(attestations, data)
+				attestations = atts
 			} else {
 				// Read from files
 				if len(args) == 0 {
@@ -94,19 +133,35 @@ Examples:
 				}
 
 				for _, path := range args {
-					data, err := os.ReadFile(path)
+					f, err := os.Open(path)
 					if err != nil {
 						return fmt.Errorf("reading %s: %w", path, err)
 					}
-					attestations = append(attestations, data)
+					atts, err := splitAttestations(f)
+					f.Close() //nolint:errcheck,gosec // read-only file
+					if err != nil {
+						return fmt.Errorf("reading %s: %w", path, err)
+					}
+					attestations = append(attestations, atts...)
 				}
 			}
 
-			// Push attestations
+			if len(attestations) == 0 {
+				return errors.New("no attestations found in input")
+			}
+
+			// Push attestations. A jsonl file can hold more than the server
+			// accepts per request, so upload in batches and collect the
+			// results as though it had been one call.
 			fmt.Printf("Pushing %d attestation(s) to org %s namespace %q...\n", len(attestations), orgID, opts.Namespace)
-			results, err := c.UploadAttestations(cmd.Context(), orgID, opts.Namespace, attestations)
-			if err != nil {
-				return fmt.Errorf("pushing attestations: %w", err)
+
+			var results []*client.UploadResult
+			for batch := range slices.Chunk(attestations, maxPushBatch) {
+				r, err := c.UploadAttestations(cmd.Context(), orgID, opts.Namespace, batch)
+				if err != nil {
+					return fmt.Errorf("pushing attestations: %w", err)
+				}
+				results = append(results, r...)
 			}
 
 			// Print results
