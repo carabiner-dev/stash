@@ -62,6 +62,7 @@ message AttestationResult {
   bool stored = 3;
   bool validated = 4;
   string error = 5; // Error message if storage or validation failed
+  bool existed = 6; // True when an identical attestation was already stored (idempotent upload)
 }
 
 // GetAttestationRequest retrieves an attestation.

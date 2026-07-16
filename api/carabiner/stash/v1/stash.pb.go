@@ -137,7 +137,8 @@ type AttestationResult struct {
 	ContentHash   string                 `protobuf:"bytes,2,opt,name=content_hash,json=contentHash,proto3" json:"content_hash,omitempty"`
 	Stored        bool                   `protobuf:"varint,3,opt,name=stored,proto3" json:"stored,omitempty"`
 	Validated     bool                   `protobuf:"varint,4,opt,name=validated,proto3" json:"validated,omitempty"`
-	Error         string                 `protobuf:"bytes,5,opt,name=error,proto3" json:"error,omitempty"` // Error message if storage or validation failed
+	Error         string                 `protobuf:"bytes,5,opt,name=error,proto3" json:"error,omitempty"`      // Error message if storage or validation failed
+	Existed       bool                   `protobuf:"varint,6,opt,name=existed,proto3" json:"existed,omitempty"` // True when an identical attestation was already stored (idempotent upload)
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -205,6 +206,13 @@ func (x *AttestationResult) GetError() string {
 		return x.Error
 	}
 	return ""
+}
+
+func (x *AttestationResult) GetExisted() bool {
+	if x != nil {
+		return x.Existed
+	}
+	return false
 }
 
 // GetAttestationRequest retrieves an attestation.
@@ -874,13 +882,14 @@ const file_carabiner_stash_v1_stash_proto_rawDesc = "" +
 	"\x06org_id\x18\n" +
 	" \x01(\tR\x05orgId\"]\n" +
 	"\x1aUploadAttestationsResponse\x12?\n" +
-	"\aresults\x18\x01 \x03(\v2%.carabiner.stash.v1.AttestationResultR\aresults\"\xa9\x01\n" +
+	"\aresults\x18\x01 \x03(\v2%.carabiner.stash.v1.AttestationResultR\aresults\"\xc3\x01\n" +
 	"\x11AttestationResult\x12%\n" +
 	"\x0eattestation_id\x18\x01 \x01(\tR\rattestationId\x12!\n" +
 	"\fcontent_hash\x18\x02 \x01(\tR\vcontentHash\x12\x16\n" +
 	"\x06stored\x18\x03 \x01(\bR\x06stored\x12\x1c\n" +
 	"\tvalidated\x18\x04 \x01(\bR\tvalidated\x12\x14\n" +
-	"\x05error\x18\x05 \x01(\tR\x05error\"\x93\x02\n" +
+	"\x05error\x18\x05 \x01(\tR\x05error\x12\x18\n" +
+	"\aexisted\x18\x06 \x01(\bR\aexisted\"\x93\x02\n" +
 	"\x15GetAttestationRequest\x12\x1c\n" +
 	"\tnamespace\x18\x01 \x01(\tR\tnamespace\x12'\n" +
 	"\x0eattestation_id\x18\x02 \x01(\tH\x00R\rattestationId\x12#\n" +

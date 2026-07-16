@@ -187,7 +187,7 @@ func (c *GRPCClient) UploadAttestations(ctx context.Context, orgID, namespace st
 		results[i] = &UploadResult{
 			AttestationID: r.GetAttestationId(),
 			ContentHash:   r.GetContentHash(),
-			Existed:       r.GetStored() && r.GetAttestationId() != "",
+			Existed:       r.GetExisted(),
 			Error:         r.GetError(),
 		}
 	}

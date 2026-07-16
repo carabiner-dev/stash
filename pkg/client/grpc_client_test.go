@@ -19,8 +19,15 @@ import (
 // fields the client actually sent over the wire.
 type captureServer struct {
 	stashv1.UnimplementedStashServiceServer
-	deleteReq *stashv1.DeleteAttestationRequest
-	updateReq *stashv1.UpdateAttestationRequest
+	deleteReq  *stashv1.DeleteAttestationRequest
+	updateReq  *stashv1.UpdateAttestationRequest
+	uploadReq  *stashv1.UploadAttestationsRequest
+	uploadResp *stashv1.UploadAttestationsResponse
+}
+
+func (s *captureServer) UploadAttestations(_ context.Context, req *stashv1.UploadAttestationsRequest) (*stashv1.UploadAttestationsResponse, error) {
+	s.uploadReq = req
+	return s.uploadResp, nil
 }
 
 func (s *captureServer) DeleteAttestation(_ context.Context, req *stashv1.DeleteAttestationRequest) (*stashv1.DeleteAttestationResponse, error) {
@@ -102,6 +109,31 @@ func TestGRPCDeleteAttestationRequiresOrg(t *testing.T) {
 
 	if err := c.DeleteAttestation(context.Background(), "", "", "att-123"); err == nil {
 		t.Fatal("expected an error when no org ID is available")
+	}
+}
+
+func TestGRPCUploadAttestationsExisted(t *testing.T) {
+	c, capture := newBufconnClient(t)
+	capture.uploadResp = &stashv1.UploadAttestationsResponse{
+		Results: []*stashv1.AttestationResult{
+			{AttestationId: "att-new", ContentHash: "aaa", Stored: true},
+			{AttestationId: "att-dup", ContentHash: "bbb", Stored: true, Existed: true},
+		},
+	}
+
+	results, err := c.UploadAttestations(context.Background(), "acme.example.com", "", [][]byte{[]byte("{}"), []byte("{}")})
+	if err != nil {
+		t.Fatalf("UploadAttestations: %v", err)
+	}
+
+	if got := capture.uploadReq.GetOrgId(); got != "acme.example.com" {
+		t.Errorf("org_id: got %q, want %q", got, "acme.example.com")
+	}
+	if results[0].Existed {
+		t.Error("freshly stored attestation reported as already existing")
+	}
+	if !results[1].Existed {
+		t.Error("duplicate attestation not reported as already existing")
 	}
 }
 
