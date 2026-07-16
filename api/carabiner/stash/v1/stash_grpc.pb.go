@@ -27,6 +27,9 @@ const (
 	StashService_UploadPublicKey_FullMethodName    = "/carabiner.stash.v1.StashService/UploadPublicKey"
 	StashService_DeletePublicKey_FullMethodName    = "/carabiner.stash.v1.StashService/DeletePublicKey"
 	StashService_ListPublicKeys_FullMethodName     = "/carabiner.stash.v1.StashService/ListPublicKeys"
+	StashService_PushPolicies_FullMethodName       = "/carabiner.stash.v1.StashService/PushPolicies"
+	StashService_AppendPolicy_FullMethodName       = "/carabiner.stash.v1.StashService/AppendPolicy"
+	StashService_GetPolicy_FullMethodName          = "/carabiner.stash.v1.StashService/GetPolicy"
 	StashService_HealthCheck_FullMethodName        = "/carabiner.stash.v1.StashService/HealthCheck"
 )
 
@@ -52,6 +55,16 @@ type StashServiceClient interface {
 	DeletePublicKey(ctx context.Context, in *DeletePublicKeyRequest, opts ...grpc.CallOption) (*DeletePublicKeyResponse, error)
 	// ListPublicKeys retrieves all public keys for an organization.
 	ListPublicKeys(ctx context.Context, in *ListPublicKeysRequest, opts ...grpc.CallOption) (*ListPublicKeysResponse, error)
+	// PushPolicies stores one or more policy documents. Each document's lineage
+	// is taken from its own id.
+	PushPolicies(ctx context.Context, in *PushPoliciesRequest, opts ...grpc.CallOption) (*PushPoliciesResponse, error)
+	// AppendPolicy stores one document as the next version of a named lineage.
+	// The lineage is supplied out of band, so the document need carry neither an
+	// id nor a version.
+	AppendPolicy(ctx context.Context, in *AppendPolicyRequest, opts ...grpc.CallOption) (*AppendPolicyResponse, error)
+	// GetPolicy retrieves one version of a policy lineage, or its latest version
+	// when no version is given.
+	GetPolicy(ctx context.Context, in *GetPolicyRequest, opts ...grpc.CallOption) (*GetPolicyResponse, error)
 	// HealthCheck checks service health.
 	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
@@ -144,6 +157,36 @@ func (c *stashServiceClient) ListPublicKeys(ctx context.Context, in *ListPublicK
 	return out, nil
 }
 
+func (c *stashServiceClient) PushPolicies(ctx context.Context, in *PushPoliciesRequest, opts ...grpc.CallOption) (*PushPoliciesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(PushPoliciesResponse)
+	err := c.cc.Invoke(ctx, StashService_PushPolicies_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) AppendPolicy(ctx context.Context, in *AppendPolicyRequest, opts ...grpc.CallOption) (*AppendPolicyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(AppendPolicyResponse)
+	err := c.cc.Invoke(ctx, StashService_AppendPolicy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) GetPolicy(ctx context.Context, in *GetPolicyRequest, opts ...grpc.CallOption) (*GetPolicyResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetPolicyResponse)
+	err := c.cc.Invoke(ctx, StashService_GetPolicy_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *stashServiceClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(HealthCheckResponse)
@@ -176,6 +219,16 @@ type StashServiceServer interface {
 	DeletePublicKey(context.Context, *DeletePublicKeyRequest) (*DeletePublicKeyResponse, error)
 	// ListPublicKeys retrieves all public keys for an organization.
 	ListPublicKeys(context.Context, *ListPublicKeysRequest) (*ListPublicKeysResponse, error)
+	// PushPolicies stores one or more policy documents. Each document's lineage
+	// is taken from its own id.
+	PushPolicies(context.Context, *PushPoliciesRequest) (*PushPoliciesResponse, error)
+	// AppendPolicy stores one document as the next version of a named lineage.
+	// The lineage is supplied out of band, so the document need carry neither an
+	// id nor a version.
+	AppendPolicy(context.Context, *AppendPolicyRequest) (*AppendPolicyResponse, error)
+	// GetPolicy retrieves one version of a policy lineage, or its latest version
+	// when no version is given.
+	GetPolicy(context.Context, *GetPolicyRequest) (*GetPolicyResponse, error)
 	// HealthCheck checks service health.
 	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedStashServiceServer()
@@ -211,6 +264,15 @@ func (UnimplementedStashServiceServer) DeletePublicKey(context.Context, *DeleteP
 }
 func (UnimplementedStashServiceServer) ListPublicKeys(context.Context, *ListPublicKeysRequest) (*ListPublicKeysResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPublicKeys not implemented")
+}
+func (UnimplementedStashServiceServer) PushPolicies(context.Context, *PushPoliciesRequest) (*PushPoliciesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method PushPolicies not implemented")
+}
+func (UnimplementedStashServiceServer) AppendPolicy(context.Context, *AppendPolicyRequest) (*AppendPolicyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method AppendPolicy not implemented")
+}
+func (UnimplementedStashServiceServer) GetPolicy(context.Context, *GetPolicyRequest) (*GetPolicyResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetPolicy not implemented")
 }
 func (UnimplementedStashServiceServer) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method HealthCheck not implemented")
@@ -380,6 +442,60 @@ func _StashService_ListPublicKeys_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StashService_PushPolicies_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PushPoliciesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).PushPolicies(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_PushPolicies_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).PushPolicies(ctx, req.(*PushPoliciesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_AppendPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AppendPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).AppendPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_AppendPolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).AppendPolicy(ctx, req.(*AppendPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_GetPolicy_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPolicyRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).GetPolicy(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_GetPolicy_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).GetPolicy(ctx, req.(*GetPolicyRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StashService_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HealthCheckRequest)
 	if err := dec(in); err != nil {
@@ -436,6 +552,18 @@ var StashService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPublicKeys",
 			Handler:    _StashService_ListPublicKeys_Handler,
+		},
+		{
+			MethodName: "PushPolicies",
+			Handler:    _StashService_PushPolicies_Handler,
+		},
+		{
+			MethodName: "AppendPolicy",
+			Handler:    _StashService_AppendPolicy_Handler,
+		},
+		{
+			MethodName: "GetPolicy",
+			Handler:    _StashService_GetPolicy_Handler,
 		},
 		{
 			MethodName: "HealthCheck",

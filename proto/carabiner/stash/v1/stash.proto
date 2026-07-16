@@ -6,6 +6,7 @@ option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stash
 
 import "carabiner/stash/v1/attestation.proto";
 import "carabiner/stash/v1/filters.proto";
+import "carabiner/stash/v1/policy.proto";
 import "carabiner/stash/v1/publickey.proto";
 
 // StashService provides attestation storage and retrieval operations.
@@ -33,6 +34,19 @@ service StashService {
 
   // ListPublicKeys retrieves all public keys for an organization.
   rpc ListPublicKeys(ListPublicKeysRequest) returns (ListPublicKeysResponse);
+
+  // PushPolicies stores one or more policy documents. Each document's lineage
+  // is taken from its own id.
+  rpc PushPolicies(PushPoliciesRequest) returns (PushPoliciesResponse);
+
+  // AppendPolicy stores one document as the next version of a named lineage.
+  // The lineage is supplied out of band, so the document need carry neither an
+  // id nor a version.
+  rpc AppendPolicy(AppendPolicyRequest) returns (AppendPolicyResponse);
+
+  // GetPolicy retrieves one version of a policy lineage, or its latest version
+  // when no version is given.
+  rpc GetPolicy(GetPolicyRequest) returns (GetPolicyResponse);
 
   // HealthCheck checks service health.
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
@@ -145,6 +159,69 @@ message UpdateAttestationRequest {
 // UpdateAttestationResponse confirms update.
 message UpdateAttestationResponse {
   // Currently returns NOT_IMPLEMENTED status
+}
+
+// PushPoliciesRequest carries policy documents to store (max 100).
+message PushPoliciesRequest {
+  // Namespace for the policies (empty string = default namespace).
+  string namespace = 1;
+
+  // Raw policy documents: bare policy JSON or an attestation envelope wrapping
+  // one (a signed sigstore bundle or an unsigned DSSE).
+  repeated bytes policies = 2;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// PushPoliciesResponse reports the outcome of each submitted document, in order.
+message PushPoliciesResponse {
+  repeated PolicyResult results = 1;
+}
+
+// AppendPolicyRequest stores one document as the next version of a lineage.
+message AppendPolicyRequest {
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
+  // The lineage to append to. Created if it does not exist.
+  string lineage_id = 2;
+
+  // The policy document.
+  bytes policy = 3;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// AppendPolicyResponse reports the outcome of an append.
+message AppendPolicyResponse {
+  PolicyResult result = 1;
+}
+
+// GetPolicyRequest retrieves a policy version.
+message GetPolicyRequest {
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
+  // The lineage to read.
+  string lineage_id = 2;
+
+  // The version to read. When absent, the lineage's latest version is returned;
+  // versions are 0-based, so an explicit 0 is version 0, not "latest".
+  optional int64 version = 3;
+
+  // If true, only return the raw stored document.
+  bool raw_only = 4;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// GetPolicyResponse carries a policy version and its stored bytes.
+message GetPolicyResponse {
+  Policy policy = 1;
+  bytes raw = 2; // the stored policy document
 }
 
 // HealthCheckRequest checks service health.

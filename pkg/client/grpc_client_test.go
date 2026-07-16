@@ -27,6 +27,13 @@ type captureServer struct {
 	updateReq  *stashv1.UpdateAttestationRequest
 	uploadReq  *stashv1.UploadAttestationsRequest
 	uploadResp *stashv1.UploadAttestationsResponse
+
+	pushPoliciesReq  *stashv1.PushPoliciesRequest
+	pushPoliciesResp *stashv1.PushPoliciesResponse
+	appendPolicyReq  *stashv1.AppendPolicyRequest
+	appendPolicyResp *stashv1.AppendPolicyResponse
+	getPolicyReq     *stashv1.GetPolicyRequest
+	getPolicyResp    *stashv1.GetPolicyResponse
 }
 
 func (s *captureServer) UploadAttestations(_ context.Context, req *stashv1.UploadAttestationsRequest) (*stashv1.UploadAttestationsResponse, error) {
@@ -42,6 +49,30 @@ func (s *captureServer) DeleteAttestation(_ context.Context, req *stashv1.Delete
 func (s *captureServer) UpdateAttestation(_ context.Context, req *stashv1.UpdateAttestationRequest) (*stashv1.UpdateAttestationResponse, error) {
 	s.updateReq = req
 	return &stashv1.UpdateAttestationResponse{}, nil
+}
+
+func (s *captureServer) PushPolicies(_ context.Context, req *stashv1.PushPoliciesRequest) (*stashv1.PushPoliciesResponse, error) {
+	s.pushPoliciesReq = req
+	if s.pushPoliciesResp != nil {
+		return s.pushPoliciesResp, nil
+	}
+	return &stashv1.PushPoliciesResponse{}, nil
+}
+
+func (s *captureServer) AppendPolicy(_ context.Context, req *stashv1.AppendPolicyRequest) (*stashv1.AppendPolicyResponse, error) {
+	s.appendPolicyReq = req
+	if s.appendPolicyResp != nil {
+		return s.appendPolicyResp, nil
+	}
+	return &stashv1.AppendPolicyResponse{}, nil
+}
+
+func (s *captureServer) GetPolicy(_ context.Context, req *stashv1.GetPolicyRequest) (*stashv1.GetPolicyResponse, error) {
+	s.getPolicyReq = req
+	if s.getPolicyResp != nil {
+		return s.getPolicyResp, nil
+	}
+	return &stashv1.GetPolicyResponse{}, nil
 }
 
 // newBufconnClient starts an in-process gRPC server and returns a GRPCClient
@@ -151,4 +182,127 @@ func TestGRPCUpdateAttestationSendsOrgID(t *testing.T) {
 	if got := capture.updateReq.GetOrgId(); got != testOrgID {
 		t.Errorf("org_id: got %q, want %q", got, testOrgID)
 	}
+}
+
+func TestGRPCPushPoliciesSendsOrgIDAndResults(t *testing.T) {
+	c, capture := newBufconnClient(t)
+	capture.pushPoliciesResp = &stashv1.PushPoliciesResponse{
+		Results: []*stashv1.PolicyResult{
+			{LineageId: "lin-a", Version: 0, DocumentKind: "policy", ContentHash: "aaa"},
+			{LineageId: "lin-b", ContentHash: "bbb", Existed: true},
+			{LineageId: "lin-c", Error: "rejected"},
+		},
+	}
+
+	results, err := c.PushPolicies(context.Background(), testOrgID, "ns", [][]byte{[]byte("{}"), []byte("{}"), []byte("{}")})
+	if err != nil {
+		t.Fatalf("PushPolicies: %v", err)
+	}
+
+	if got := capture.pushPoliciesReq.GetOrgId(); got != testOrgID {
+		t.Errorf("org_id: got %q, want %q", got, testOrgID)
+	}
+	if got := capture.pushPoliciesReq.GetNamespace(); got != "ns" {
+		t.Errorf("namespace: got %q, want %q", got, "ns")
+	}
+	if got := len(capture.pushPoliciesReq.GetPolicies()); got != 3 {
+		t.Errorf("policies sent: got %d, want 3", got)
+	}
+
+	// Per-document results are returned in order.
+	if len(results) != 3 {
+		t.Fatalf("results: got %d, want 3", len(results))
+	}
+	if results[0].LineageID != "lin-a" || results[0].DocumentKind != "policy" {
+		t.Errorf("result[0]: got %+v", results[0])
+	}
+	if !results[1].Existed {
+		t.Error("result[1] should report Existed")
+	}
+	if results[2].Error != "rejected" {
+		t.Errorf("result[2] error: got %q, want %q", results[2].Error, "rejected")
+	}
+}
+
+func TestGRPCAppendPolicySendsOrgID(t *testing.T) {
+	c, capture := newBufconnClient(t)
+	capture.appendPolicyResp = &stashv1.AppendPolicyResponse{
+		Result: &stashv1.PolicyResult{LineageId: "lin-a", Version: 3},
+	}
+
+	result, err := c.AppendPolicy(context.Background(), testOrgID, "ns", "lin-a", []byte("{}"))
+	if err != nil {
+		t.Fatalf("AppendPolicy: %v", err)
+	}
+
+	if got := capture.appendPolicyReq.GetOrgId(); got != testOrgID {
+		t.Errorf("org_id: got %q, want %q", got, testOrgID)
+	}
+	if got := capture.appendPolicyReq.GetLineageId(); got != "lin-a" {
+		t.Errorf("lineage_id: got %q, want %q", got, "lin-a")
+	}
+	if result.Version != 3 {
+		t.Errorf("result version: got %d, want 3", result.Version)
+	}
+}
+
+func TestGRPCGetPolicyPassesVersion(t *testing.T) {
+	// A nil version reads latest and must not set the field on the wire.
+	t.Run("latest", func(t *testing.T) {
+		c, capture := newBufconnClient(t)
+		capture.getPolicyResp = &stashv1.GetPolicyResponse{
+			Policy: &stashv1.Policy{LineageId: "lin-a", Version: 7},
+			Raw:    []byte("{}"),
+		}
+
+		pol, raw, err := c.GetPolicy(context.Background(), testOrgID, "ns", "lin-a", nil)
+		if err != nil {
+			t.Fatalf("GetPolicy: %v", err)
+		}
+		if got := capture.getPolicyReq.GetOrgId(); got != testOrgID {
+			t.Errorf("org_id: got %q, want %q", got, testOrgID)
+		}
+		if capture.getPolicyReq.Version != nil {
+			t.Errorf("version should be nil for latest, got %d", capture.getPolicyReq.GetVersion())
+		}
+		if pol.Version != 7 {
+			t.Errorf("policy version: got %d, want 7", pol.Version)
+		}
+		if string(raw) != "{}" {
+			t.Errorf("raw: got %q, want %q", string(raw), "{}")
+		}
+	})
+
+	// An explicit 0 is version 0, distinct from "latest".
+	t.Run("explicit zero", func(t *testing.T) {
+		c, capture := newBufconnClient(t)
+		capture.getPolicyResp = &stashv1.GetPolicyResponse{Policy: &stashv1.Policy{}}
+
+		v := int64(0)
+		if _, _, err := c.GetPolicy(context.Background(), testOrgID, "ns", "lin-a", &v); err != nil {
+			t.Fatalf("GetPolicy: %v", err)
+		}
+		if capture.getPolicyReq.Version == nil {
+			t.Fatal("version should be set for explicit 0")
+		}
+		if got := capture.getPolicyReq.GetVersion(); got != 0 {
+			t.Errorf("version: got %d, want 0", got)
+		}
+	})
+
+	t.Run("explicit value", func(t *testing.T) {
+		c, capture := newBufconnClient(t)
+		capture.getPolicyResp = &stashv1.GetPolicyResponse{Policy: &stashv1.Policy{}}
+
+		v := int64(5)
+		if _, _, err := c.GetPolicy(context.Background(), testOrgID, "ns", "lin-a", &v); err != nil {
+			t.Fatalf("GetPolicy: %v", err)
+		}
+		if capture.getPolicyReq.Version == nil {
+			t.Fatal("version should be set for explicit value")
+		}
+		if got := capture.getPolicyReq.GetVersion(); got != 5 {
+			t.Errorf("version: got %d, want 5", got)
+		}
+	})
 }

@@ -1,0 +1,41 @@
+// SPDX-FileCopyrightText: Copyright 2026 Carabiner Systems, Inc
+// SPDX-License-Identifier: Apache-2.0
+
+syntax = "proto3";
+
+package carabiner.stash.v1;
+
+option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stashv1";
+
+import "google/protobuf/timestamp.proto";
+
+// Policy is one version of a policy lineage. A lineage — keyed by
+// (org, namespace, lineage_id) — is an append-only sequence of ampel policy
+// documents; version orders its members and is 0-based (the first is version 0).
+message Policy {
+  string lineage_id = 1;
+  int64 version = 2;
+  string document_kind = 3; // policy | policyset | policygroup
+  string content_hash = 4;
+  string predicate_type = 5;
+  bool signed = 6;
+  bool validated = 7;
+  string validation_error = 8;
+  repeated string signer_identities = 9;
+  google.protobuf.Timestamp created_at = 10;
+}
+
+// PolicyResult is the outcome of storing one policy document.
+message PolicyResult {
+  string lineage_id = 1;
+  int64 version = 2;
+  string document_kind = 3;
+  string content_hash = 4;
+  bool signed = 5;
+  bool validated = 6;
+  repeated string signer_identities = 7;
+  // existed is true when the exact document was already the lineage head, so the
+  // upload was an idempotent no-op rather than a new version.
+  bool existed = 8;
+  string error = 9; // set when this document was rejected
+}

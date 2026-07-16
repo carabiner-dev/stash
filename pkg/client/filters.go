@@ -154,3 +154,35 @@ type PublicKey struct {
 	Algorithm string    `json:"algorithm"`
 	CreatedAt time.Time `json:"created_at"`
 }
+
+// Policy is the metadata of one version of a policy lineage. A lineage — keyed
+// by (org, namespace, lineage_id) — is an append-only sequence of policy
+// documents; Version orders its members and is 0-based (the first is version 0).
+type Policy struct {
+	LineageID        string    `json:"lineage_id"`
+	Version          int64     `json:"version"`
+	DocumentKind     string    `json:"document_kind"`
+	ContentHash      string    `json:"content_hash"`
+	PredicateType    string    `json:"predicate_type,omitempty"`
+	Signed           bool      `json:"signed"`
+	Validated        bool      `json:"validated"`
+	ValidationError  string    `json:"validation_error,omitempty"`
+	SignerIdentities []string  `json:"signer_identities,omitempty"`
+	CreatedAt        time.Time `json:"created_at"`
+}
+
+// PolicyResult is the outcome of storing one policy document.
+type PolicyResult struct {
+	LineageID        string   `json:"lineage_id"`
+	Version          int64    `json:"version"`
+	DocumentKind     string   `json:"document_kind"`
+	ContentHash      string   `json:"content_hash"`
+	Signed           bool     `json:"signed"`
+	Validated        bool     `json:"validated"`
+	SignerIdentities []string `json:"signer_identities,omitempty"`
+	// Existed is true when the exact document was already the lineage head, so the
+	// upload was an idempotent no-op rather than a new version.
+	Existed bool `json:"existed"`
+	// Error is set when this document was rejected.
+	Error string `json:"error,omitempty"`
+}

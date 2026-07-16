@@ -10,6 +10,8 @@ import (
 // UploadAttestations uploads one or more attestations to the server.
 // Returns a list of upload results, one for each attestation.
 // orgID must be specified - convenience endpoints have been removed.
+//
+//nolint:dupl // parallel REST upload flow, mirrored by PushPolicies
 func (c *Client) UploadAttestations(ctx context.Context, orgID, namespace string, attestations [][]byte) ([]*UploadResult, error) {
 	if len(attestations) == 0 {
 		return nil, fmt.Errorf("no attestations provided")

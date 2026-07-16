@@ -535,6 +535,116 @@ func (c *GRPCClient) DeleteNamespace(ctx context.Context, orgID, name string) er
 	return fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
 }
 
+// PushPolicies stores one or more policy documents in a namespace. Each
+// document's lineage is derived from its own id.
+func (c *GRPCClient) PushPolicies(ctx context.Context, orgID, namespace string, policies [][]byte) ([]*PolicyResult, error) {
+	if len(policies) == 0 {
+		return nil, fmt.Errorf("no policies provided")
+	}
+	if len(policies) > 100 {
+		return nil, fmt.Errorf("batch size exceeds maximum of 100")
+	}
+
+	// Resolve orgID - derive from token if not provided
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate orgID format
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return nil, fmt.Errorf("invalid org ID: %w", err)
+	}
+
+	authCtx, err := c.ctxWithAuth(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("getting auth context: %w", err)
+	}
+
+	resp, err := c.client.PushPolicies(authCtx, &stashv1.PushPoliciesRequest{
+		Namespace: namespace,
+		Policies:  policies,
+		OrgId:     resolvedOrgID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	results := make([]*PolicyResult, len(resp.GetResults()))
+	for i, r := range resp.GetResults() {
+		results[i] = protoToPolicyResult(r)
+	}
+
+	return results, nil
+}
+
+// AppendPolicy stores one document as the next version of a named lineage.
+func (c *GRPCClient) AppendPolicy(ctx context.Context, orgID, namespace, lineageID string, policy []byte) (*PolicyResult, error) {
+	if len(policy) == 0 {
+		return nil, fmt.Errorf("no policy provided")
+	}
+
+	// Resolve orgID - derive from token if not provided
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+
+	// Validate orgID format
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return nil, fmt.Errorf("invalid org ID: %w", err)
+	}
+
+	authCtx, err := c.ctxWithAuth(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("getting auth context: %w", err)
+	}
+
+	resp, err := c.client.AppendPolicy(authCtx, &stashv1.AppendPolicyRequest{
+		Namespace: namespace,
+		LineageId: lineageID,
+		Policy:    policy,
+		OrgId:     resolvedOrgID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return protoToPolicyResult(resp.GetResult()), nil
+}
+
+// GetPolicy retrieves one version of a policy lineage. A nil version reads the
+// latest version; versions are 0-based, so a non-nil 0 reads version 0.
+func (c *GRPCClient) GetPolicy(ctx context.Context, orgID, namespace, lineageID string, version *int64) (*Policy, []byte, error) {
+	// Resolve orgID - derive from token if not provided
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	// Validate orgID format
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return nil, nil, fmt.Errorf("invalid org ID: %w", err)
+	}
+
+	authCtx, err := c.ctxWithAuth(ctx)
+	if err != nil {
+		return nil, nil, fmt.Errorf("getting auth context: %w", err)
+	}
+
+	resp, err := c.client.GetPolicy(authCtx, &stashv1.GetPolicyRequest{
+		Namespace: namespace,
+		LineageId: lineageID,
+		Version:   version,
+		OrgId:     resolvedOrgID,
+	})
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return protoToPolicy(resp.GetPolicy()), resp.GetRaw(), nil
+}
+
 // HealthCheck checks server health.
 func (c *GRPCClient) HealthCheck(ctx context.Context) (status string, components map[string]string, err error) {
 	authCtx, err := c.ctxWithAuth(ctx)
