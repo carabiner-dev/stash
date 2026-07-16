@@ -64,6 +64,50 @@ func protoToAttestation(pb *stashv1.Attestation) *Attestation {
 	return att
 }
 
+// protoToPolicy converts a proto Policy to a client Policy.
+func protoToPolicy(pb *stashv1.Policy) *Policy {
+	if pb == nil {
+		return nil
+	}
+
+	p := &Policy{
+		LineageID:        pb.GetLineageId(),
+		Version:          pb.GetVersion(),
+		DocumentKind:     pb.GetDocumentKind(),
+		ContentHash:      pb.GetContentHash(),
+		PredicateType:    pb.GetPredicateType(),
+		Signed:           pb.GetSigned(),
+		Validated:        pb.GetValidated(),
+		ValidationError:  pb.GetValidationError(),
+		SignerIdentities: pb.GetSignerIdentities(),
+	}
+
+	if pb.GetCreatedAt() != nil {
+		p.CreatedAt = pb.GetCreatedAt().AsTime()
+	}
+
+	return p
+}
+
+// protoToPolicyResult converts a proto PolicyResult to a client PolicyResult.
+func protoToPolicyResult(pb *stashv1.PolicyResult) *PolicyResult {
+	if pb == nil {
+		return nil
+	}
+
+	return &PolicyResult{
+		LineageID:        pb.GetLineageId(),
+		Version:          pb.GetVersion(),
+		DocumentKind:     pb.GetDocumentKind(),
+		ContentHash:      pb.GetContentHash(),
+		Signed:           pb.GetSigned(),
+		Validated:        pb.GetValidated(),
+		SignerIdentities: pb.GetSignerIdentities(),
+		Existed:          pb.GetExisted(),
+		Error:            pb.GetError(),
+	}
+}
+
 // parseAddress extracts host:port and determines if insecure from a URL.
 func parseAddress(baseURL string) (address string, insecure bool) {
 	// Parse the URL
