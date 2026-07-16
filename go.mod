@@ -7,6 +7,7 @@ require (
 	github.com/carabiner-dev/collector v0.3.8
 	github.com/carabiner-dev/command v0.3.1
 	github.com/carabiner-dev/deadrop v0.0.0-20260228173914-d95e9ea2877d
+	github.com/carabiner-dev/termtable v1.1.0
 	github.com/spf13/cobra v1.10.2
 	google.golang.org/grpc v1.82.0
 	google.golang.org/protobuf v1.36.11
@@ -106,6 +107,7 @@ require (
 	github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/protobom/protobom v0.5.6 // indirect
+	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.53.0 // indirect
 	github.com/samber/slog-common v0.21.0 // indirect
 	github.com/samber/slog-zap/v2 v2.6.4 // indirect
