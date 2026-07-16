@@ -137,6 +137,7 @@ sequence of policy documents; versions are 0-based.`,
 	addPolicyPushCommand(cmd)
 	addPolicyAppendCommand(cmd)
 	addPolicyGetCommand(cmd)
+	addPolicyDeleteCommand(cmd)
 
 	parent.AddCommand(cmd)
 }
@@ -400,6 +401,102 @@ Examples:
 				printIndentedJSON(raw)
 			}
 
+			return nil
+		},
+	}
+
+	opts.AddFlags(cmd)
+	parent.AddCommand(cmd)
+}
+
+// PolicyDeleteOptions holds the options for the policy delete command.
+var _ command.OptionsSet = (*PolicyDeleteOptions)(nil)
+
+type PolicyDeleteOptions struct {
+	ClientOptions
+	Namespace string
+	Lineage   string
+	Version   int64
+}
+
+var defaultPolicyDeleteOptions = PolicyDeleteOptions{
+	ClientOptions: DefaultClientOptions,
+	Namespace:     "",
+	Lineage:       "",
+	Version:       -1,
+}
+
+func (o *PolicyDeleteOptions) Validate() error {
+	var errs []error
+	if o.Lineage == "" {
+		errs = append(errs, errors.New("a lineage ID is required (use --lineage)"))
+	}
+	errs = append(errs, o.ClientOptions.Validate())
+	return errors.Join(errs...)
+}
+
+func (o *PolicyDeleteOptions) Config() *command.OptionsSetConfig {
+	return nil
+}
+
+func (o *PolicyDeleteOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+	cmd.Flags().StringVarP(&o.Namespace, "namespace", "n", "", "Namespace for the policy (default: empty)")
+	cmd.Flags().StringVar(&o.Lineage, "lineage", "", "Lineage ID to delete from (required)")
+	cmd.Flags().Int64Var(&o.Version, "version", -1, "Version to delete (0-based); omit to delete the whole lineage")
+}
+
+// addPolicyDeleteCommand adds the policy delete command.
+func addPolicyDeleteCommand(parent *cobra.Command) {
+	opts := defaultPolicyDeleteOptions
+	cmd := &cobra.Command{
+		Use:   "delete",
+		Short: "Delete a policy lineage or version from Stash",
+		Long: `Delete a whole policy lineage, or one version of it.
+
+By default the whole lineage (every version) is deleted; pass --version to
+delete only that 0-based version. Deleting the current head makes the previous
+version the lineage's latest.
+
+Examples:
+  # Delete a whole lineage
+  stash policy delete --lineage my-policy
+
+  # Delete only version 3
+  stash policy delete --lineage my-policy --version 3`,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			orgID, err := opts.GetOrg()
+			if err != nil {
+				return err
+			}
+
+			c, cleanup, err := opts.NewClient(cmd.Context(), orgID, opts.Namespace)
+			if err != nil {
+				return fmt.Errorf("creating client: %w", err)
+			}
+			defer cleanup()
+
+			// A nil version deletes the whole lineage; only pass a version when
+			// the flag was set, since 0 is a valid explicit version.
+			var version *int64
+			if cmd.Flags().Changed("version") {
+				v := opts.Version
+				version = &v
+			}
+
+			deleted, err := c.DeletePolicy(cmd.Context(), orgID, opts.Namespace, opts.Lineage, version)
+			if err != nil {
+				return fmt.Errorf("deleting policy: %w", err)
+			}
+
+			if version != nil {
+				fmt.Printf("Deleted version %d of lineage %s\n", *version, opts.Lineage)
+			} else {
+				fmt.Printf("Deleted lineage %s (%d version(s))\n", opts.Lineage, deleted)
+			}
 			return nil
 		},
 	}

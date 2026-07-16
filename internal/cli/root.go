@@ -57,6 +57,7 @@ By default, the client uses gRPC for communication. Use --rest to fall back to R
 	stashcmd.AddUpdate(rootCmd)
 	stashcmd.AddVerify(rootCmd)
 	stashcmd.AddPublicKey(rootCmd)
+	stashcmd.AddPolicy(rootCmd)
 	addVersion(rootCmd)
 
 	return rootCmd.Execute()

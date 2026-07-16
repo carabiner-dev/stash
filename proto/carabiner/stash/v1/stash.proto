@@ -48,6 +48,11 @@ service StashService {
   // when no version is given.
   rpc GetPolicy(GetPolicyRequest) returns (GetPolicyResponse);
 
+  // DeletePolicy removes a whole policy lineage, or one version of it when a
+  // version is given. Deleting the current head makes the previous version the
+  // lineage's latest.
+  rpc DeletePolicy(DeletePolicyRequest) returns (DeletePolicyResponse);
+
   // HealthCheck checks service health.
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 }
@@ -222,6 +227,27 @@ message GetPolicyRequest {
 message GetPolicyResponse {
   Policy policy = 1;
   bytes raw = 2; // the stored policy document
+}
+
+// DeletePolicyRequest removes a lineage or one of its versions.
+message DeletePolicyRequest {
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
+  // The lineage to delete from.
+  string lineage_id = 2;
+
+  // The version to delete. When absent the whole lineage (every version) is
+  // deleted; when present only that 0-based version is deleted.
+  optional int64 version = 3;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// DeletePolicyResponse reports how many versions were deleted.
+message DeletePolicyResponse {
+  int64 deleted = 1;
 }
 
 // HealthCheckRequest checks service health.

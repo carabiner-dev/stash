@@ -92,6 +92,9 @@ type StashClient interface {
 	// It returns the policy metadata and the raw stored document.
 	// orgID must be specified.
 	GetPolicy(ctx context.Context, orgID, namespace, lineageID string, version *int64) (*Policy, []byte, error)
+
+	// DeletePolicy removes a whole policy lineage or one of its versions.
+	DeletePolicy(ctx context.Context, orgID, namespace, lineageID string, version *int64) (int64, error)
 }
 
 // Ensure both client types implement the interface.

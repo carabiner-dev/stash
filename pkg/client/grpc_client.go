@@ -658,3 +658,30 @@ func (c *GRPCClient) HealthCheck(ctx context.Context) (status string, components
 	}
 	return resp.GetStatus(), resp.GetComponents(), nil
 }
+
+// DeletePolicy removes a whole policy lineage, or one version of it when version
+// is non-nil, returning the number of versions deleted.
+func (c *GRPCClient) DeletePolicy(ctx context.Context, orgID, namespace, lineageID string, version *int64) (int64, error) {
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return 0, err
+	}
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return 0, fmt.Errorf("invalid org ID: %w", err)
+	}
+	authCtx, err := c.ctxWithAuth(ctx)
+	if err != nil {
+		return 0, fmt.Errorf("getting auth context: %w", err)
+	}
+
+	resp, err := c.client.DeletePolicy(authCtx, &stashv1.DeletePolicyRequest{
+		Namespace: namespace,
+		LineageId: lineageID,
+		Version:   version,
+		OrgId:     resolvedOrgID,
+	})
+	if err != nil {
+		return 0, err
+	}
+	return resp.GetDeleted(), nil
+}

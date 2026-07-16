@@ -130,3 +130,29 @@ func (c *Client) GetPolicy(ctx context.Context, orgID, namespace, lineageID stri
 
 	return result.Policy, []byte(result.Raw), nil
 }
+
+// DeletePolicy removes a whole policy lineage, or one version of it when version
+// is non-nil (0 is a valid version, distinct from "whole lineage"), returning
+// the number of versions deleted.
+func (c *Client) DeletePolicy(ctx context.Context, orgID, namespace, lineageID string, version *int64) (int64, error) {
+	if orgID == "" {
+		return 0, fmt.Errorf("orgID is required")
+	}
+
+	ns := normalizeNamespace(namespace)
+	if ns == "" {
+		ns = "_"
+	}
+	path := fmt.Sprintf("/v1/policies/%s/%s/%s", orgID, ns, lineageID)
+	if version != nil {
+		path = fmt.Sprintf("%s?version=%s", path, strconv.FormatInt(*version, 10))
+	}
+
+	var result struct {
+		Deleted int64 `json:"deleted"`
+	}
+	if err := c.doRequest(ctx, "DELETE", path, nil, &result); err != nil {
+		return 0, err
+	}
+	return result.Deleted, nil
+}
