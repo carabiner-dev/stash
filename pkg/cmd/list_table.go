@@ -102,7 +102,7 @@ func buildListRows(atts []*client.Attestation, now time.Time) []listRow {
 
 		identities := att.SignerIdentities
 		if len(identities) == 0 {
-			identities = []string{"[unsigned]"}
+			identities = []string{noSignerLabel(att)}
 		}
 
 		for i, id := range identities {
@@ -151,6 +151,17 @@ func verifiedMark(att *client.Attestation) string {
 		return markVerified
 	}
 	return markUnverified
+}
+
+// noSignerLabel explains an attestation that names no signer. The server only
+// records identities it verified, so an absence means one of two different
+// things and the reader needs to be able to tell them apart: nothing signed
+// this, or something did and its signature did not check out.
+func noSignerLabel(att *client.Attestation) string {
+	if att.Signed {
+		return "[unverified]"
+	}
+	return "[unsigned]"
 }
 
 // formatCreated renders a timestamp for the fixed-width CREATED column. Within
