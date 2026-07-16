@@ -156,3 +156,52 @@ func (c *Client) DeletePolicy(ctx context.Context, orgID, namespace, lineageID s
 	}
 	return result.Deleted, nil
 }
+
+// ListPolicies returns one entry per lineage in a namespace, each at its latest
+// version. orgID must be specified.
+func (c *Client) ListPolicies(ctx context.Context, orgID, namespace string) ([]*Policy, error) {
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
+	}
+
+	// Normalize namespace: empty string means default namespace.
+	ns := normalizeNamespace(namespace)
+
+	// If namespace is empty, omit it from URL (uses default namespace).
+	var path string
+	if ns == "" {
+		path = fmt.Sprintf("/v1/policies/%s", orgID)
+	} else {
+		path = fmt.Sprintf("/v1/policies/%s/%s", orgID, ns)
+	}
+
+	var result struct {
+		Policies []*Policy `json:"policies"`
+	}
+	if err := c.doRequest(ctx, "GET", path, nil, &result); err != nil {
+		return nil, err
+	}
+	return result.Policies, nil
+}
+
+// ListPolicyVersions returns every version of one lineage, newest first.
+// orgID must be specified.
+func (c *Client) ListPolicyVersions(ctx context.Context, orgID, namespace, lineageID string) ([]*Policy, error) {
+	if orgID == "" {
+		return nil, fmt.Errorf("orgID is required")
+	}
+
+	ns := normalizeNamespace(namespace)
+	if ns == "" {
+		ns = "_"
+	}
+	path := fmt.Sprintf("/v1/policies/%s/%s/%s/versions", orgID, ns, lineageID)
+
+	var result struct {
+		Policies []*Policy `json:"policies"`
+	}
+	if err := c.doRequest(ctx, "GET", path, nil, &result); err != nil {
+		return nil, err
+	}
+	return result.Policies, nil
+}

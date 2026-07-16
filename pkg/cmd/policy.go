@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"os"
 	"slices"
+	"time"
 
 	"github.com/carabiner-dev/command"
 	"github.com/spf13/cobra"
@@ -137,6 +138,8 @@ sequence of policy documents; versions are 0-based.`,
 	addPolicyPushCommand(cmd)
 	addPolicyAppendCommand(cmd)
 	addPolicyGetCommand(cmd)
+	addPolicyListCommand(cmd)
+	addPolicyVersionsCommand(cmd)
 	addPolicyDeleteCommand(cmd)
 
 	parent.AddCommand(cmd)
@@ -401,6 +404,161 @@ Examples:
 				printIndentedJSON(raw)
 			}
 
+			return nil
+		},
+	}
+
+	opts.AddFlags(cmd)
+	parent.AddCommand(cmd)
+}
+
+// PolicyListOptions holds the options for the policy list command.
+var _ command.OptionsSet = (*PolicyListOptions)(nil)
+
+type PolicyListOptions struct {
+	ClientOptions
+	Namespace string
+}
+
+var defaultPolicyListOptions = PolicyListOptions{
+	ClientOptions: DefaultClientOptions,
+	Namespace:     "",
+}
+
+func (o *PolicyListOptions) Validate() error {
+	return errors.Join(
+		o.ClientOptions.Validate(),
+	)
+}
+
+func (o *PolicyListOptions) Config() *command.OptionsSetConfig {
+	return nil
+}
+
+func (o *PolicyListOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+	cmd.Flags().StringVarP(&o.Namespace, "namespace", "n", "", "Namespace to list policies from (default: empty)")
+}
+
+// addPolicyListCommand adds the policy list command.
+func addPolicyListCommand(parent *cobra.Command) {
+	opts := defaultPolicyListOptions
+	cmd := &cobra.Command{
+		Use:   "list",
+		Short: "List policy lineages in a namespace",
+		Long: `List every policy lineage in a namespace, each shown at its latest version.
+
+Examples:
+  # List policies in the default namespace
+  stash policy list
+
+  # List policies in a namespace
+  stash policy list --namespace prod`,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			orgID, err := opts.GetOrg()
+			if err != nil {
+				return err
+			}
+
+			c, cleanup, err := opts.NewClient(cmd.Context(), orgID, opts.Namespace)
+			if err != nil {
+				return fmt.Errorf("creating client: %w", err)
+			}
+			defer cleanup()
+
+			policies, err := c.ListPolicies(cmd.Context(), orgID, opts.Namespace)
+			if err != nil {
+				return fmt.Errorf("listing policies: %w", err)
+			}
+
+			if len(policies) == 0 {
+				fmt.Println("No policies found.")
+				return nil
+			}
+
+			printPolicyListTable(os.Stdout, policies, time.Now())
+			return nil
+		},
+	}
+
+	opts.AddFlags(cmd)
+	parent.AddCommand(cmd)
+}
+
+// PolicyVersionsOptions holds the options for the policy versions command.
+var _ command.OptionsSet = (*PolicyVersionsOptions)(nil)
+
+type PolicyVersionsOptions struct {
+	ClientOptions
+	Namespace string
+	Lineage   string
+}
+
+var defaultPolicyVersionsOptions = PolicyVersionsOptions{
+	ClientOptions: DefaultClientOptions,
+	Namespace:     "",
+	Lineage:       "",
+}
+
+func (o *PolicyVersionsOptions) Validate() error {
+	var errs []error
+	if o.Lineage == "" {
+		errs = append(errs, errors.New("a lineage ID is required (use --lineage)"))
+	}
+	errs = append(errs, o.ClientOptions.Validate())
+	return errors.Join(errs...)
+}
+
+func (o *PolicyVersionsOptions) Config() *command.OptionsSetConfig {
+	return nil
+}
+
+func (o *PolicyVersionsOptions) AddFlags(cmd *cobra.Command) {
+	o.ClientOptions.AddFlags(cmd)
+	cmd.Flags().StringVarP(&o.Namespace, "namespace", "n", "", "Namespace for the lineage (default: empty)")
+	cmd.Flags().StringVar(&o.Lineage, "lineage", "", "Lineage ID to list versions of (required)")
+}
+
+// addPolicyVersionsCommand adds the policy versions command.
+func addPolicyVersionsCommand(parent *cobra.Command) {
+	opts := defaultPolicyVersionsOptions
+	cmd := &cobra.Command{
+		Use:   "versions",
+		Short: "List the versions of a policy lineage",
+		Long: `List every version of one policy lineage, newest first.
+
+Examples:
+  # List the versions of a lineage
+  stash policy versions --lineage my-policy`,
+		PreRunE: func(cmd *cobra.Command, args []string) error {
+			return opts.Validate()
+		},
+		RunE: func(cmd *cobra.Command, args []string) error {
+			orgID, err := opts.GetOrg()
+			if err != nil {
+				return err
+			}
+
+			c, cleanup, err := opts.NewClient(cmd.Context(), orgID, opts.Namespace)
+			if err != nil {
+				return fmt.Errorf("creating client: %w", err)
+			}
+			defer cleanup()
+
+			policies, err := c.ListPolicyVersions(cmd.Context(), orgID, opts.Namespace, opts.Lineage)
+			if err != nil {
+				return fmt.Errorf("listing policy versions: %w", err)
+			}
+
+			if len(policies) == 0 {
+				fmt.Printf("No versions found for lineage %q.\n", opts.Lineage)
+				return nil
+			}
+
+			printPolicyVersionsTable(os.Stdout, policies, time.Now())
 			return nil
 		},
 	}

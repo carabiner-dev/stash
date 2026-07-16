@@ -685,3 +685,63 @@ func (c *GRPCClient) DeletePolicy(ctx context.Context, orgID, namespace, lineage
 	}
 	return resp.GetDeleted(), nil
 }
+
+// ListPolicies returns one entry per lineage in a namespace, each at its latest
+// version.
+func (c *GRPCClient) ListPolicies(ctx context.Context, orgID, namespace string) ([]*Policy, error) {
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return nil, fmt.Errorf("invalid org ID: %w", err)
+	}
+	authCtx, err := c.ctxWithAuth(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("getting auth context: %w", err)
+	}
+
+	resp, err := c.client.ListPolicies(authCtx, &stashv1.ListPoliciesRequest{
+		Namespace: namespace,
+		OrgId:     resolvedOrgID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	policies := make([]*Policy, len(resp.GetPolicies()))
+	for i, p := range resp.GetPolicies() {
+		policies[i] = protoToPolicy(p)
+	}
+	return policies, nil
+}
+
+// ListPolicyVersions returns every version of one lineage, newest first.
+func (c *GRPCClient) ListPolicyVersions(ctx context.Context, orgID, namespace, lineageID string) ([]*Policy, error) {
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return nil, fmt.Errorf("invalid org ID: %w", err)
+	}
+	authCtx, err := c.ctxWithAuth(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("getting auth context: %w", err)
+	}
+
+	resp, err := c.client.ListPolicyVersions(authCtx, &stashv1.ListPolicyVersionsRequest{
+		Namespace: namespace,
+		LineageId: lineageID,
+		OrgId:     resolvedOrgID,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	policies := make([]*Policy, len(resp.GetPolicies()))
+	for i, p := range resp.GetPolicies() {
+		policies[i] = protoToPolicy(p)
+	}
+	return policies, nil
+}

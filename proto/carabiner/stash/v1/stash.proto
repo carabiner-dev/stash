@@ -53,6 +53,13 @@ service StashService {
   // lineage's latest.
   rpc DeletePolicy(DeletePolicyRequest) returns (DeletePolicyResponse);
 
+  // ListPolicies lists the policy lineages in a namespace, each as its latest
+  // version.
+  rpc ListPolicies(ListPoliciesRequest) returns (ListPoliciesResponse);
+
+  // ListPolicyVersions lists every version of one policy lineage, newest first.
+  rpc ListPolicyVersions(ListPolicyVersionsRequest) returns (ListPolicyVersionsResponse);
+
   // HealthCheck checks service health.
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);
 }
@@ -248,6 +255,37 @@ message DeletePolicyRequest {
 // DeletePolicyResponse reports how many versions were deleted.
 message DeletePolicyResponse {
   int64 deleted = 1;
+}
+
+// ListPoliciesRequest lists the lineages in a namespace.
+message ListPoliciesRequest {
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// ListPoliciesResponse carries one entry per lineage, at its latest version.
+message ListPoliciesResponse {
+  repeated Policy policies = 1;
+}
+
+// ListPolicyVersionsRequest lists the versions of one lineage.
+message ListPolicyVersionsRequest {
+  // Namespace (empty string = default namespace).
+  string namespace = 1;
+
+  // The lineage to list.
+  string lineage_id = 2;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// ListPolicyVersionsResponse carries every version of a lineage, newest first.
+message ListPolicyVersionsResponse {
+  repeated Policy policies = 1;
 }
 
 // HealthCheckRequest checks service health.
