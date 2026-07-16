@@ -15,6 +15,10 @@ import (
 	stashv1 "github.com/carabiner-dev/stash/api/carabiner/stash/v1"
 )
 
+// testOrgID is the organization these tests address. ValidateOrgID requires a
+// DNS hostname, so it cannot be an arbitrary word.
+const testOrgID = "acme.example.com"
+
 // captureServer records the requests it receives so tests can assert on the
 // fields the client actually sent over the wire.
 type captureServer struct {
@@ -73,12 +77,12 @@ func newBufconnClient(t *testing.T) (*GRPCClient, *captureServer) {
 func TestGRPCDeleteAttestationSendsOrgID(t *testing.T) {
 	c, capture := newBufconnClient(t)
 
-	if err := c.DeleteAttestation(context.Background(), "acme.example.com", "ns", "att-123"); err != nil {
+	if err := c.DeleteAttestation(context.Background(), testOrgID, "ns", "att-123"); err != nil {
 		t.Fatalf("DeleteAttestation: %v", err)
 	}
 
-	if got := capture.deleteReq.GetOrgId(); got != "acme.example.com" {
-		t.Errorf("org_id: got %q, want %q", got, "acme.example.com")
+	if got := capture.deleteReq.GetOrgId(); got != testOrgID {
+		t.Errorf("org_id: got %q, want %q", got, testOrgID)
 	}
 	if got := capture.deleteReq.GetNamespace(); got != "ns" {
 		t.Errorf("namespace: got %q, want %q", got, "ns")
@@ -92,7 +96,7 @@ func TestGRPCDeleteAttestationByHash(t *testing.T) {
 	c, capture := newBufconnClient(t)
 
 	hash := "sha256:a1b2c3d4"
-	if err := c.DeleteAttestation(context.Background(), "acme.example.com", "", hash); err != nil {
+	if err := c.DeleteAttestation(context.Background(), testOrgID, "", hash); err != nil {
 		t.Fatalf("DeleteAttestation: %v", err)
 	}
 
@@ -121,13 +125,13 @@ func TestGRPCUploadAttestationsExisted(t *testing.T) {
 		},
 	}
 
-	results, err := c.UploadAttestations(context.Background(), "acme.example.com", "", [][]byte{[]byte("{}"), []byte("{}")})
+	results, err := c.UploadAttestations(context.Background(), testOrgID, "", [][]byte{[]byte("{}"), []byte("{}")})
 	if err != nil {
 		t.Fatalf("UploadAttestations: %v", err)
 	}
 
-	if got := capture.uploadReq.GetOrgId(); got != "acme.example.com" {
-		t.Errorf("org_id: got %q, want %q", got, "acme.example.com")
+	if got := capture.uploadReq.GetOrgId(); got != testOrgID {
+		t.Errorf("org_id: got %q, want %q", got, testOrgID)
 	}
 	if results[0].Existed {
 		t.Error("freshly stored attestation reported as already existing")
@@ -140,11 +144,11 @@ func TestGRPCUploadAttestationsExisted(t *testing.T) {
 func TestGRPCUpdateAttestationSendsOrgID(t *testing.T) {
 	c, capture := newBufconnClient(t)
 
-	if err := c.UpdateAttestation(context.Background(), "acme.example.com", "ns", "att-123", nil); err != nil {
+	if err := c.UpdateAttestation(context.Background(), testOrgID, "ns", "att-123", nil); err != nil {
 		t.Fatalf("UpdateAttestation: %v", err)
 	}
 
-	if got := capture.updateReq.GetOrgId(); got != "acme.example.com" {
-		t.Errorf("org_id: got %q, want %q", got, "acme.example.com")
+	if got := capture.updateReq.GetOrgId(); got != testOrgID {
+		t.Errorf("org_id: got %q, want %q", got, testOrgID)
 	}
 }

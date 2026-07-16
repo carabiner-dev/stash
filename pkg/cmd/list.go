@@ -7,7 +7,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
 	"strings"
+	"time"
 
 	"github.com/carabiner-dev/command"
 	"github.com/spf13/cobra"
@@ -186,27 +188,8 @@ Examples:
 			}
 
 			fmt.Printf("Found %d attestation(s)\n\n", len(result.Attestations))
-
-			for i, att := range result.Attestations {
-				fmt.Printf("%d. %s\n", i+1, att.ID)
-				fmt.Printf("   Predicate Type: %s\n", att.PredicateType)
-				fmt.Printf("   Content Hash:   %s\n", att.ContentHash[:16]+"...")
-				fmt.Printf("   Signed:         %v\n", att.Signed)
-				fmt.Printf("   Validated:      %v\n", att.Validated)
-				if len(att.Subjects) > 0 {
-					fmt.Printf("   Subjects:       %d\n", len(att.Subjects))
-					for j, subject := range att.Subjects {
-						if j < 3 {
-							fmt.Printf("     - %s (%s)\n", subject.Name, subject.DigestAlgorithm)
-						} else if j == 3 {
-							fmt.Printf("     ... and %d more\n", len(att.Subjects)-3)
-							break
-						}
-					}
-				}
-				fmt.Printf("   Created:        %s\n", att.CreatedAt.Format("2006-01-02 15:04:05"))
-				fmt.Println()
-			}
+			printListTable(os.Stdout, result.Attestations, time.Now())
+			fmt.Println()
 
 			if result.NextCursor != "" {
 				fmt.Printf("Next page cursor: %s\n", result.NextCursor)
