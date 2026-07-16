@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"strings"
 	"time"
 
 	"google.golang.org/grpc"
@@ -382,20 +383,49 @@ func (c *GRPCClient) ListAttestations(ctx context.Context, orgID, namespace stri
 
 // DeleteAttestation deletes an attestation by ID or hash.
 func (c *GRPCClient) DeleteAttestation(ctx context.Context, orgID, namespace, id string) error {
+	// Resolve orgID - derive from token if not provided
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return err
+	}
+
+	// Validate orgID format
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return fmt.Errorf("invalid org ID: %w", err)
+	}
+
 	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return fmt.Errorf("getting auth context: %w", err)
 	}
 
-	_, err = c.client.DeleteAttestation(authCtx, &stashv1.DeleteAttestationRequest{
-		Namespace:  namespace,
-		Identifier: &stashv1.DeleteAttestationRequest_AttestationId{AttestationId: id},
-	})
+	req := &stashv1.DeleteAttestationRequest{
+		Namespace: namespace,
+		OrgId:     resolvedOrgID,
+	}
+	if strings.HasPrefix(id, "sha256:") {
+		req.Identifier = &stashv1.DeleteAttestationRequest_ContentHash{ContentHash: id}
+	} else {
+		req.Identifier = &stashv1.DeleteAttestationRequest_AttestationId{AttestationId: id}
+	}
+
+	_, err = c.client.DeleteAttestation(authCtx, req)
 	return err
 }
 
 // UpdateAttestation updates an attestation (currently not implemented).
 func (c *GRPCClient) UpdateAttestation(ctx context.Context, orgID, namespace, id string, updates map[string]interface{}) error {
+	// Resolve orgID - derive from token if not provided
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return err
+	}
+
+	// Validate orgID format
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return fmt.Errorf("invalid org ID: %w", err)
+	}
+
 	authCtx, err := c.ctxWithAuth(ctx)
 	if err != nil {
 		return fmt.Errorf("getting auth context: %w", err)
@@ -404,6 +434,7 @@ func (c *GRPCClient) UpdateAttestation(ctx context.Context, orgID, namespace, id
 	_, err = c.client.UpdateAttestation(authCtx, &stashv1.UpdateAttestationRequest{
 		Namespace:     namespace,
 		AttestationId: id,
+		OrgId:         resolvedOrgID,
 	})
 	return err
 }
