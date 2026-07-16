@@ -143,3 +143,49 @@ func TestBuildListRowsFallbacks(t *testing.T) {
 		t.Errorf("verified = %q, want %q", rows[0].verified, markUnverified)
 	}
 }
+
+// TestNoSignerLabel pins the two reasons an attestation names no signer. The
+// server records only verified identities, so their absence is ambiguous
+// unless the label says which case it is.
+func TestNoSignerLabel(t *testing.T) {
+	for _, tc := range []struct {
+		name string
+		att  client.Attestation
+		want string
+	}{
+		{"nothing signed it", client.Attestation{Signed: false}, "[unsigned]"},
+		{"signed but the signature did not verify", client.Attestation{Signed: true, Validated: false}, "[unverified]"},
+		// A verified attestation normally carries identities, so this label is
+		// not reached; if it ever is, "unsigned" would be a plain lie.
+		{"signed and verified", client.Attestation{Signed: true, Validated: true}, "[unverified]"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := noSignerLabel(&tc.att); got != tc.want {
+				t.Errorf("noSignerLabel() = %q, want %q", got, tc.want)
+			}
+		})
+	}
+}
+
+// TestBuildListRowsUnverifiedSigner covers the row builder end: a signed
+// attestation whose signature did not verify has no identities recorded, and
+// must not be presented as unsigned.
+func TestBuildListRowsUnverifiedSigner(t *testing.T) {
+	now := time.Date(2026, 7, 16, 12, 0, 0, 0, time.Local)
+	rows := buildListRows([]*client.Attestation{{
+		ID:        "id-1",
+		Signed:    true,
+		Validated: false,
+		CreatedAt: now,
+	}}, now)
+
+	if len(rows) != 1 {
+		t.Fatalf("got %d rows, want 1", len(rows))
+	}
+	if rows[0].identity != "[unverified]" {
+		t.Errorf("identity = %q, want [unverified]", rows[0].identity)
+	}
+	if rows[0].verified != markUnverified {
+		t.Errorf("verified = %q, want %q", rows[0].verified, markUnverified)
+	}
+}
