@@ -4,7 +4,7 @@ go 1.25.12
 
 require (
 	github.com/carabiner-dev/attestation v0.2.1
-	github.com/carabiner-dev/collector v0.3.10
+	github.com/carabiner-dev/collector v0.3.11
 	github.com/carabiner-dev/command v0.3.1
 	github.com/carabiner-dev/deadrop v0.0.0-20260228173914-d95e9ea2877d
 	github.com/carabiner-dev/termtable v1.1.0
@@ -30,7 +30,8 @@ require (
 	github.com/carabiner-dev/policy v0.5.1 // indirect
 	github.com/carabiner-dev/predicates v0.5.0 // indirect
 	github.com/carabiner-dev/signer v0.5.3-0.20260728042848-608f5e258e3a // indirect
-	github.com/carabiner-dev/vcslocator v0.4.6 // indirect
+	github.com/carabiner-dev/spdx3 v0.1.0 // indirect
+	github.com/carabiner-dev/vcslocator v0.4.7 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/chainguard-dev/clog v1.8.0 // indirect
@@ -47,32 +48,33 @@ require (
 	github.com/fatih/color v1.19.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
 	github.com/go-git/go-billy/v5 v5.9.1 // indirect
-	github.com/go-git/go-git/v5 v5.19.1 // indirect
+	github.com/go-git/go-git/v5 v5.19.2 // indirect
 	github.com/go-jose/go-jose/v4 v4.1.4 // indirect
-	github.com/go-logr/logr v1.4.3 // indirect
+	github.com/go-logr/logr v1.4.4 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
-	github.com/go-openapi/analysis v0.25.2 // indirect
+	github.com/go-openapi/analysis v0.25.5 // indirect
 	github.com/go-openapi/errors v0.22.8 // indirect
-	github.com/go-openapi/jsonpointer v0.23.1 // indirect
-	github.com/go-openapi/jsonreference v0.21.6 // indirect
-	github.com/go-openapi/loads v0.24.0 // indirect
-	github.com/go-openapi/runtime v0.32.4 // indirect
+	github.com/go-openapi/jsonpointer v1.0.0 // indirect
+	github.com/go-openapi/jsonreference v1.0.0 // indirect
+	github.com/go-openapi/loads v0.25.0 // indirect
+	github.com/go-openapi/runtime v0.33.0 // indirect
 	github.com/go-openapi/runtime/server-middleware v0.32.3 // indirect
-	github.com/go-openapi/spec v0.22.6 // indirect
+	github.com/go-openapi/spec v0.22.9 // indirect
 	github.com/go-openapi/strfmt v0.27.0 // indirect
 	github.com/go-openapi/swag v0.26.1 // indirect
-	github.com/go-openapi/swag/cmdutils v0.26.1 // indirect
-	github.com/go-openapi/swag/conv v0.27.3 // indirect
-	github.com/go-openapi/swag/fileutils v0.26.1 // indirect
+	github.com/go-openapi/swag/cmdutils v0.27.0 // indirect
+	github.com/go-openapi/swag/conv v0.28.0 // indirect
+	github.com/go-openapi/swag/fileutils v0.27.3 // indirect
 	github.com/go-openapi/swag/jsonname v0.26.1 // indirect
-	github.com/go-openapi/swag/jsonutils v0.26.1 // indirect
-	github.com/go-openapi/swag/loading v0.26.1 // indirect
-	github.com/go-openapi/swag/mangling v0.26.1 // indirect
-	github.com/go-openapi/swag/netutils v0.26.1 // indirect
-	github.com/go-openapi/swag/stringutils v0.26.1 // indirect
-	github.com/go-openapi/swag/typeutils v0.27.3 // indirect
-	github.com/go-openapi/swag/yamlutils v0.26.1 // indirect
-	github.com/go-openapi/validate v0.26.0 // indirect
+	github.com/go-openapi/swag/jsonutils v0.27.3 // indirect
+	github.com/go-openapi/swag/loading v0.27.3 // indirect
+	github.com/go-openapi/swag/mangling v0.27.3 // indirect
+	github.com/go-openapi/swag/netutils v0.27.0 // indirect
+	github.com/go-openapi/swag/pools v0.27.3 // indirect
+	github.com/go-openapi/swag/stringutils v0.27.3 // indirect
+	github.com/go-openapi/swag/typeutils v0.28.0 // indirect
+	github.com/go-openapi/swag/yamlutils v0.27.3 // indirect
+	github.com/go-openapi/validate v0.26.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
 	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.1 // indirect
@@ -119,8 +121,8 @@ require (
 	github.com/sigstore/rekor v1.5.3 // indirect
 	github.com/sigstore/rekor-tiles/v2 v2.3.0 // indirect
 	github.com/sigstore/sigstore v1.10.8 // indirect
-	github.com/sigstore/sigstore-go v1.2.2 // indirect
-	github.com/sigstore/timestamp-authority/v2 v2.1.2 // indirect
+	github.com/sigstore/sigstore-go v1.3.0 // indirect
+	github.com/sigstore/timestamp-authority/v2 v2.1.3 // indirect
 	github.com/sirupsen/logrus v1.9.4 // indirect
 	github.com/skeema/knownhosts v1.3.2 // indirect
 	github.com/spdx/tools-golang v0.5.7 // indirect
@@ -140,7 +142,7 @@ require (
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.54.0 // indirect
-	golang.org/x/mod v0.37.0 // indirect
+	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/net v0.57.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
