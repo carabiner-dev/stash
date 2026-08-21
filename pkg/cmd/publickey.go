@@ -176,7 +176,7 @@ Examples:
 func addPublicKeyListCommand(parent *cobra.Command) {
 	opts := defaultPublicKeyListOptions
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   cmdNameList,
 		Short: "List public keys",
 		Long: `List all public keys stored in Stash for your organization.
 

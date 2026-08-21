@@ -19,6 +19,9 @@ import (
 // DNS hostname, so it cannot be an arbitrary word.
 const testOrgID = "acme.example.com"
 
+// testLineageID is the policy lineage the policy tests address.
+const testLineageID = "lin-a"
+
 // captureServer records the requests it receives so tests can assert on the
 // fields the client actually sent over the wire.
 type captureServer struct {
@@ -198,7 +201,7 @@ func TestGRPCPushPoliciesSendsOrgIDAndResults(t *testing.T) {
 	c, capture := newBufconnClient(t)
 	capture.pushPoliciesResp = &stashv1.PushPoliciesResponse{
 		Results: []*stashv1.PolicyResult{
-			{LineageId: "lin-a", Version: 0, DocumentKind: "policy", ContentHash: "aaa"},
+			{LineageId: testLineageID, Version: 0, DocumentKind: "policy", ContentHash: "aaa"},
 			{LineageId: "lin-b", ContentHash: "bbb", Existed: true},
 			{LineageId: "lin-c", Error: "rejected"},
 		},
@@ -223,7 +226,7 @@ func TestGRPCPushPoliciesSendsOrgIDAndResults(t *testing.T) {
 	if len(results) != 3 {
 		t.Fatalf("results: got %d, want 3", len(results))
 	}
-	if results[0].LineageID != "lin-a" || results[0].DocumentKind != "policy" {
+	if results[0].LineageID != testLineageID || results[0].DocumentKind != "policy" {
 		t.Errorf("result[0]: got %+v", results[0])
 	}
 	if !results[1].Existed {
@@ -237,10 +240,10 @@ func TestGRPCPushPoliciesSendsOrgIDAndResults(t *testing.T) {
 func TestGRPCAppendPolicySendsOrgID(t *testing.T) {
 	c, capture := newBufconnClient(t)
 	capture.appendPolicyResp = &stashv1.AppendPolicyResponse{
-		Result: &stashv1.PolicyResult{LineageId: "lin-a", Version: 3},
+		Result: &stashv1.PolicyResult{LineageId: testLineageID, Version: 3},
 	}
 
-	result, err := c.AppendPolicy(context.Background(), testOrgID, "ns", "lin-a", []byte("{}"))
+	result, err := c.AppendPolicy(context.Background(), testOrgID, "ns", testLineageID, []byte("{}"))
 	if err != nil {
 		t.Fatalf("AppendPolicy: %v", err)
 	}
@@ -248,8 +251,8 @@ func TestGRPCAppendPolicySendsOrgID(t *testing.T) {
 	if got := capture.appendPolicyReq.GetOrgId(); got != testOrgID {
 		t.Errorf("org_id: got %q, want %q", got, testOrgID)
 	}
-	if got := capture.appendPolicyReq.GetLineageId(); got != "lin-a" {
-		t.Errorf("lineage_id: got %q, want %q", got, "lin-a")
+	if got := capture.appendPolicyReq.GetLineageId(); got != testLineageID {
+		t.Errorf("lineage_id: got %q, want %q", got, testLineageID)
 	}
 	if result.Version != 3 {
 		t.Errorf("result version: got %d, want 3", result.Version)
@@ -261,11 +264,11 @@ func TestGRPCGetPolicyPassesVersion(t *testing.T) {
 	t.Run("latest", func(t *testing.T) {
 		c, capture := newBufconnClient(t)
 		capture.getPolicyResp = &stashv1.GetPolicyResponse{
-			Policy: &stashv1.Policy{LineageId: "lin-a", Version: 7},
+			Policy: &stashv1.Policy{LineageId: testLineageID, Version: 7},
 			Raw:    []byte("{}"),
 		}
 
-		pol, raw, err := c.GetPolicy(context.Background(), testOrgID, "ns", "lin-a", nil)
+		pol, raw, err := c.GetPolicy(context.Background(), testOrgID, "ns", testLineageID, nil)
 		if err != nil {
 			t.Fatalf("GetPolicy: %v", err)
 		}
@@ -289,7 +292,7 @@ func TestGRPCGetPolicyPassesVersion(t *testing.T) {
 		capture.getPolicyResp = &stashv1.GetPolicyResponse{Policy: &stashv1.Policy{}}
 
 		v := int64(0)
-		if _, _, err := c.GetPolicy(context.Background(), testOrgID, "ns", "lin-a", &v); err != nil {
+		if _, _, err := c.GetPolicy(context.Background(), testOrgID, "ns", testLineageID, &v); err != nil {
 			t.Fatalf("GetPolicy: %v", err)
 		}
 		if capture.getPolicyReq.Version == nil {
@@ -305,7 +308,7 @@ func TestGRPCGetPolicyPassesVersion(t *testing.T) {
 		capture.getPolicyResp = &stashv1.GetPolicyResponse{Policy: &stashv1.Policy{}}
 
 		v := int64(5)
-		if _, _, err := c.GetPolicy(context.Background(), testOrgID, "ns", "lin-a", &v); err != nil {
+		if _, _, err := c.GetPolicy(context.Background(), testOrgID, "ns", testLineageID, &v); err != nil {
 			t.Fatalf("GetPolicy: %v", err)
 		}
 		if capture.getPolicyReq.Version == nil {

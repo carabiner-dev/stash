@@ -10,6 +10,13 @@ import (
 	"github.com/carabiner-dev/stash/pkg/client"
 )
 
+// Fixture values shared by the table tests.
+const (
+	testAttestationID = "id-1"
+	testSubjectName   = "artifact"
+	testDigestAlgo    = "sha256"
+)
+
 func TestFormatCreated(t *testing.T) {
 	now := time.Date(2026, 7, 16, 12, 0, 0, 0, time.Local)
 
@@ -48,13 +55,13 @@ func TestSubjectSlugs(t *testing.T) {
 	}{
 		{
 			name: "digest is preferred",
-			subs: []client.Subject{{Name: "artifact", DigestAlgorithm: "sha256", DigestValue: "abc"}},
+			subs: []client.Subject{{Name: testSubjectName, DigestAlgorithm: testDigestAlgo, DigestValue: "abc"}},
 			want: []string{"sha256:abc"},
 		},
 		{
 			name: "falls back to the name when there is no digest",
-			subs: []client.Subject{{Name: "artifact"}},
-			want: []string{"artifact"},
+			subs: []client.Subject{{Name: testSubjectName}},
+			want: []string{testSubjectName},
 		},
 		{
 			name: "subjects with neither are skipped",
@@ -82,14 +89,14 @@ func TestSubjectSlugs(t *testing.T) {
 func TestBuildListRowsExpansion(t *testing.T) {
 	now := time.Date(2026, 7, 16, 12, 0, 0, 0, time.Local)
 	atts := []*client.Attestation{{
-		ID:               "id-1",
+		ID:               testAttestationID,
 		PredicateType:    "https://slsa.dev/provenance/v1",
 		SignerIdentities: []string{"signer-a", "signer-b"},
 		Validated:        true,
 		CreatedAt:        now.Add(-72 * time.Hour),
 		Subjects: []client.Subject{
-			{DigestAlgorithm: "sha256", DigestValue: "aaa"},
-			{DigestAlgorithm: "sha256", DigestValue: "bbb"},
+			{DigestAlgorithm: testDigestAlgo, DigestValue: "aaa"},
+			{DigestAlgorithm: testDigestAlgo, DigestValue: "bbb"},
 		},
 	}}
 
@@ -99,7 +106,7 @@ func TestBuildListRowsExpansion(t *testing.T) {
 	}
 
 	// First line carries everything.
-	if rows[0].id != "id-1" || rows[0].identity != "signer-a" || rows[0].subject != "sha256:aaa" {
+	if rows[0].id != testAttestationID || rows[0].identity != "signer-a" || rows[0].subject != "sha256:aaa" {
 		t.Errorf("first row = %+v, want the id, first signer and first subject", rows[0])
 	}
 	if rows[0].verified != markVerified || rows[0].created != "2026-07-13" {
@@ -126,17 +133,17 @@ func TestBuildListRowsExpansion(t *testing.T) {
 func TestBuildListRowsFallbacks(t *testing.T) {
 	now := time.Date(2026, 7, 16, 12, 0, 0, 0, time.Local)
 	rows := buildListRows([]*client.Attestation{{
-		ID:        "id-1",
+		ID:        testAttestationID,
 		CreatedAt: now,
 	}}, now)
 
 	if len(rows) != 1 {
 		t.Fatalf("got %d rows, want 1", len(rows))
 	}
-	if rows[0].predicateType != "[not defined]" {
+	if rows[0].predicateType != labelNotDefined {
 		t.Errorf("predicateType = %q, want [not defined]", rows[0].predicateType)
 	}
-	if rows[0].identity != "[unsigned]" {
+	if rows[0].identity != labelUnsigned {
 		t.Errorf("identity = %q, want [unsigned]", rows[0].identity)
 	}
 	if rows[0].verified != markUnverified {
@@ -153,11 +160,11 @@ func TestNoSignerLabel(t *testing.T) {
 		att  client.Attestation
 		want string
 	}{
-		{"nothing signed it", client.Attestation{Signed: false}, "[unsigned]"},
-		{"signed but the signature did not verify", client.Attestation{Signed: true, Validated: false}, "[unverified]"},
+		{"nothing signed it", client.Attestation{Signed: false}, labelUnsigned},
+		{"signed but the signature did not verify", client.Attestation{Signed: true, Validated: false}, labelUnverified},
 		// A verified attestation normally carries identities, so this label is
 		// not reached; if it ever is, "unsigned" would be a plain lie.
-		{"signed and verified", client.Attestation{Signed: true, Validated: true}, "[unverified]"},
+		{"signed and verified", client.Attestation{Signed: true, Validated: true}, labelUnverified},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			if got := noSignerLabel(&tc.att); got != tc.want {
@@ -173,7 +180,7 @@ func TestNoSignerLabel(t *testing.T) {
 func TestBuildListRowsUnverifiedSigner(t *testing.T) {
 	now := time.Date(2026, 7, 16, 12, 0, 0, 0, time.Local)
 	rows := buildListRows([]*client.Attestation{{
-		ID:        "id-1",
+		ID:        testAttestationID,
 		Signed:    true,
 		Validated: false,
 		CreatedAt: now,
@@ -182,7 +189,7 @@ func TestBuildListRowsUnverifiedSigner(t *testing.T) {
 	if len(rows) != 1 {
 		t.Fatalf("got %d rows, want 1", len(rows))
 	}
-	if rows[0].identity != "[unverified]" {
+	if rows[0].identity != labelUnverified {
 		t.Errorf("identity = %q, want [unverified]", rows[0].identity)
 	}
 	if rows[0].verified != markUnverified {
