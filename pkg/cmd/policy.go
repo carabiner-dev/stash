@@ -444,7 +444,7 @@ func (o *PolicyListOptions) AddFlags(cmd *cobra.Command) {
 func addPolicyListCommand(parent *cobra.Command) {
 	opts := defaultPolicyListOptions
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   cmdNameList,
 		Short: "List policy lineages in a namespace",
 		Long: `List every policy lineage in a namespace, each shown at its latest version.
 

@@ -17,6 +17,10 @@ import (
 	"github.com/carabiner-dev/stash/pkg/client"
 )
 
+// cmdNameList names the "list" subcommand; the policy and publickey command
+// trees reuse it for theirs.
+const cmdNameList = "list"
+
 var _ command.OptionsSet = (*ListOptions)(nil)
 
 // ListOptions holds the options for the list command.
@@ -83,7 +87,7 @@ func (lo *ListOptions) AddFlags(cmd *cobra.Command) {
 func AddList(parent *cobra.Command) {
 	opts := defaultListOptions
 	cmd := &cobra.Command{
-		Use:   "list",
+		Use:   cmdNameList,
 		Short: "List attestations from Stash",
 		Long: `List attestations with optional filters and pagination.
 
