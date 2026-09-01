@@ -4,7 +4,7 @@ go 1.25.12
 
 require (
 	github.com/carabiner-dev/attestation v0.2.1
-	github.com/carabiner-dev/collector v0.3.12
+	github.com/carabiner-dev/collector v0.3.13
 	github.com/carabiner-dev/command v0.3.1
 	github.com/carabiner-dev/deadrop v0.0.0-20260228173914-d95e9ea2877d
 	github.com/carabiner-dev/termtable v1.1.0
@@ -28,7 +28,7 @@ require (
 	github.com/carabiner-dev/osv v0.1.2 // indirect
 	github.com/carabiner-dev/policy v0.5.1 // indirect
 	github.com/carabiner-dev/predicates v0.5.0 // indirect
-	github.com/carabiner-dev/signer v0.6.0 // indirect
+	github.com/carabiner-dev/signer v0.6.1 // indirect
 	github.com/carabiner-dev/spdx3 v0.1.0 // indirect
 	github.com/carabiner-dev/vcslocator v0.4.7 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
@@ -76,7 +76,7 @@ require (
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/google/certificate-transparency-go v1.3.3 // indirect
 	github.com/google/go-cmp v0.7.0 // indirect
-	github.com/google/go-containerregistry v0.21.9 // indirect
+	github.com/google/go-containerregistry v0.22.0 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.30.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -119,7 +119,7 @@ require (
 	github.com/sigstore/sigstore v1.10.9 // indirect
 	github.com/sigstore/sigstore-go v1.3.0 // indirect
 	github.com/sigstore/timestamp-authority/v2 v2.1.3 // indirect
-	github.com/sirupsen/logrus v1.10.1 // indirect
+	github.com/sirupsen/logrus v1.10.2 // indirect
 	github.com/skeema/knownhosts v1.3.2 // indirect
 	github.com/spdx/tools-golang v0.5.7 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
@@ -138,7 +138,7 @@ require (
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
-	golang.org/x/mod v0.38.0 // indirect
+	golang.org/x/mod v0.39.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
