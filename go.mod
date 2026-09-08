@@ -1,11 +1,11 @@
 module github.com/carabiner-dev/stash
 
-go 1.25.12
+go 1.26.0
 
 require (
 	github.com/carabiner-dev/attestation v0.2.1
 	github.com/carabiner-dev/collector v0.3.14
-	github.com/carabiner-dev/command v0.3.1
+	github.com/carabiner-dev/command v0.3.2
 	github.com/carabiner-dev/deadrop v0.0.0-20260228173914-d95e9ea2877d
 	github.com/carabiner-dev/termtable v1.1.0
 	github.com/spf13/cobra v1.10.2
@@ -28,12 +28,12 @@ require (
 	github.com/carabiner-dev/osv v0.1.2 // indirect
 	github.com/carabiner-dev/policy v0.5.1 // indirect
 	github.com/carabiner-dev/predicates v0.5.0 // indirect
-	github.com/carabiner-dev/signer v0.6.2-0.20260901235141-7abffe0fc666 // indirect
+	github.com/carabiner-dev/signer v0.6.2 // indirect
 	github.com/carabiner-dev/spdx3 v0.1.0 // indirect
 	github.com/carabiner-dev/vcslocator v0.5.0 // indirect
 	github.com/cenkalti/backoff/v5 v5.0.3 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/chainguard-dev/clog v1.8.0 // indirect
+	github.com/chainguard-dev/clog v1.8.1 // indirect
 	github.com/clipperhouse/displaywidth v0.11.0 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/cloudflare/circl v1.6.5 // indirect
@@ -59,15 +59,15 @@ require (
 	github.com/go-openapi/runtime v0.33.0 // indirect
 	github.com/go-openapi/runtime/server-middleware v0.33.0 // indirect
 	github.com/go-openapi/spec v0.22.9 // indirect
-	github.com/go-openapi/strfmt v0.27.0 // indirect
-	github.com/go-openapi/swag/conv v0.29.1 // indirect
+	github.com/go-openapi/strfmt v0.27.2 // indirect
+	github.com/go-openapi/swag/conv v0.29.2 // indirect
 	github.com/go-openapi/swag/fileutils v0.28.0 // indirect
 	github.com/go-openapi/swag/jsonutils v0.28.0 // indirect
 	github.com/go-openapi/swag/loading v0.28.0 // indirect
 	github.com/go-openapi/swag/mangling v0.28.0 // indirect
 	github.com/go-openapi/swag/pools v0.28.0 // indirect
 	github.com/go-openapi/swag/stringutils v0.28.0 // indirect
-	github.com/go-openapi/swag/typeutils v0.29.1 // indirect
+	github.com/go-openapi/swag/typeutils v0.29.2 // indirect
 	github.com/go-openapi/swag/yamlutils v0.28.0 // indirect
 	github.com/go-openapi/validate v0.26.3 // indirect
 	github.com/go-viper/mapstructure/v2 v2.5.0 // indirect
@@ -108,7 +108,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.53.0 // indirect
 	github.com/samber/slog-common v0.21.0 // indirect
-	github.com/samber/slog-zap/v2 v2.6.4 // indirect
+	github.com/samber/slog-zap/v2 v2.7.0 // indirect
 	github.com/sassoftware/relic/v8 v8.2.0 // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.11.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
