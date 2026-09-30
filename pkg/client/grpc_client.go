@@ -515,24 +515,88 @@ func (c *GRPCClient) DeletePublicKey(ctx context.Context, orgID, keyID string) e
 	return err
 }
 
-// CreateNamespace creates a new namespace (not implemented in gRPC yet).
+// namespaceCall resolves and validates the organization and builds the
+// authenticated context every namespace RPC needs.
+func (c *GRPCClient) namespaceCall(ctx context.Context, orgID string) (context.Context, string, error) {
+	resolvedOrgID, err := c.resolveOrgID(ctx, orgID)
+	if err != nil {
+		return nil, "", err
+	}
+	if err := ValidateOrgID(resolvedOrgID); err != nil {
+		return nil, "", fmt.Errorf("invalid org ID: %w", err)
+	}
+	authCtx, err := c.ctxWithAuth(ctx)
+	if err != nil {
+		return nil, "", fmt.Errorf("getting auth context: %w", err)
+	}
+	return authCtx, resolvedOrgID, nil
+}
+
+// CreateNamespace creates a new namespace.
 func (c *GRPCClient) CreateNamespace(ctx context.Context, orgID, name string) (*Namespace, error) {
-	return nil, fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
+	authCtx, resolvedOrgID, err := c.namespaceCall(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.client.CreateNamespace(authCtx, &stashv1.CreateNamespaceRequest{Name: name, OrgId: resolvedOrgID})
+	if err != nil {
+		return nil, err
+	}
+	return protoToNamespace(resp.GetNamespace()), nil
 }
 
-// GetNamespace retrieves a namespace (not implemented in gRPC yet).
+// GetNamespace retrieves a namespace, with whether it is public.
 func (c *GRPCClient) GetNamespace(ctx context.Context, orgID, name string) (*Namespace, error) {
-	return nil, fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
+	authCtx, resolvedOrgID, err := c.namespaceCall(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.client.GetNamespace(authCtx, &stashv1.GetNamespaceRequest{Name: name, OrgId: resolvedOrgID})
+	if err != nil {
+		return nil, err
+	}
+	return protoToNamespace(resp.GetNamespace()), nil
 }
 
-// ListNamespaces lists namespaces (not implemented in gRPC yet).
+// ListNamespaces lists an organization's namespaces.
 func (c *GRPCClient) ListNamespaces(ctx context.Context, orgID string) ([]*Namespace, error) {
-	return nil, fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
+	authCtx, resolvedOrgID, err := c.namespaceCall(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.client.ListNamespaces(authCtx, &stashv1.ListNamespacesRequest{OrgId: resolvedOrgID})
+	if err != nil {
+		return nil, err
+	}
+	namespaces := make([]*Namespace, len(resp.GetNamespaces()))
+	for i, ns := range resp.GetNamespaces() {
+		namespaces[i] = protoToNamespace(ns)
+	}
+	return namespaces, nil
 }
 
-// DeleteNamespace deletes a namespace (not implemented in gRPC yet).
+// SetNamespaceVisibility opens a namespace's attestations to anyone, or
+// closes them again.
+func (c *GRPCClient) SetNamespaceVisibility(ctx context.Context, orgID, name string, public bool) (*Namespace, error) {
+	authCtx, resolvedOrgID, err := c.namespaceCall(ctx, orgID)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := c.client.SetNamespaceVisibility(authCtx, &stashv1.SetNamespaceVisibilityRequest{Name: name, Public: public, OrgId: resolvedOrgID})
+	if err != nil {
+		return nil, err
+	}
+	return protoToNamespace(resp.GetNamespace()), nil
+}
+
+// DeleteNamespace deletes a namespace.
 func (c *GRPCClient) DeleteNamespace(ctx context.Context, orgID, name string) error {
-	return fmt.Errorf("namespace operations not supported via gRPC (proto definitions not yet updated)")
+	authCtx, resolvedOrgID, err := c.namespaceCall(ctx, orgID)
+	if err != nil {
+		return err
+	}
+	_, err = c.client.DeleteNamespace(authCtx, &stashv1.DeleteNamespaceRequest{Name: name, OrgId: resolvedOrgID})
+	return err
 }
 
 // PushPolicies stores one or more policy documents in a namespace. Each

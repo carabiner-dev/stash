@@ -124,9 +124,13 @@ type Subject struct {
 
 // Namespace represents a namespace for organizing attestations.
 type Namespace struct {
-	ID        int64     `json:"id"`
-	OrgID     string    `json:"org_id"`
-	Name      string    `json:"name"`
+	ID    int64  `json:"id"`
+	OrgID string `json:"org_id"`
+	Name  string `json:"name"`
+	// Public opens the namespace's attestations to anyone: reads pass for a
+	// caller with no token, and for one whose token holds no permission on
+	// the organization. Nothing else is public.
+	Public    bool      `json:"public"`
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

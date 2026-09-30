@@ -58,6 +58,11 @@ type StashClient interface {
 	// orgID must be specified - convenience endpoints have been removed.
 	ListNamespaces(ctx context.Context, orgID string) ([]*Namespace, error)
 
+	// SetNamespaceVisibility opens a namespace's attestations to anyone, or
+	// closes them again, and returns the namespace as stored. Opening the
+	// default namespace (the empty name) creates its record.
+	SetNamespaceVisibility(ctx context.Context, orgID, name string, public bool) (*Namespace, error)
+
 	// DeleteNamespace deletes a namespace.
 	// orgID must be specified - convenience endpoints have been removed.
 	DeleteNamespace(ctx context.Context, orgID, name string) error

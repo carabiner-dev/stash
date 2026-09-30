@@ -1,0 +1,98 @@
+syntax = "proto3";
+
+package carabiner.stash.v1;
+
+option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stashv1";
+
+import "google/protobuf/timestamp.proto";
+
+// Namespace is a folder-like grouping of an organization's attestations and
+// policies. The default namespace has the empty name.
+message Namespace {
+  // The namespace name (empty string = default namespace).
+  string name = 1;
+
+  // Public opens the namespace's attestations to anyone: reads pass for a
+  // caller with no token, and for one whose token holds no permission on
+  // the organization. Nothing else is public.
+  bool public = 2;
+
+  google.protobuf.Timestamp created_at = 3;
+  google.protobuf.Timestamp updated_at = 4;
+
+  // Organization ID (the organization handle).
+  string org_id = 10;
+}
+
+// CreateNamespaceRequest creates a namespace.
+message CreateNamespaceRequest {
+  // The namespace name (must be a valid namespace name; not the default).
+  string name = 1;
+
+  // Whether to create the namespace public (see Namespace.public).
+  bool public = 2;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// CreateNamespaceResponse carries the created namespace.
+message CreateNamespaceResponse {
+  Namespace namespace = 1;
+}
+
+// GetNamespaceRequest retrieves a namespace.
+message GetNamespaceRequest {
+  // The namespace name (empty string = default namespace).
+  string name = 1;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// GetNamespaceResponse carries the namespace.
+message GetNamespaceResponse {
+  Namespace namespace = 1;
+}
+
+// ListNamespacesRequest lists an organization's namespaces.
+message ListNamespacesRequest {
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// ListNamespacesResponse carries the organization's namespaces, by name.
+message ListNamespacesResponse {
+  repeated Namespace namespaces = 1;
+}
+
+// DeleteNamespaceRequest deletes a namespace. The default namespace cannot
+// be deleted.
+message DeleteNamespaceRequest {
+  string name = 1;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// DeleteNamespaceResponse confirms deletion.
+message DeleteNamespaceResponse {
+  bool deleted = 1;
+}
+
+// SetNamespaceVisibilityRequest opens or closes a namespace to anyone (see
+// Namespace.public). Opening the default namespace creates its record.
+message SetNamespaceVisibilityRequest {
+  // The namespace name (empty string = default namespace).
+  string name = 1;
+
+  bool public = 2;
+
+  // Organization ID (required, must be valid DNS hostname).
+  string org_id = 10;
+}
+
+// SetNamespaceVisibilityResponse carries the namespace as stored.
+message SetNamespaceVisibilityResponse {
+  Namespace namespace = 1;
+}

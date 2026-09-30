@@ -6,6 +6,7 @@ option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stash
 
 import "carabiner/stash/v1/attestation.proto";
 import "carabiner/stash/v1/filters.proto";
+import "carabiner/stash/v1/namespace.proto";
 import "carabiner/stash/v1/policy.proto";
 import "carabiner/stash/v1/publickey.proto";
 
@@ -59,6 +60,22 @@ service StashService {
 
   // ListPolicyVersions lists every version of one policy lineage, newest first.
   rpc ListPolicyVersions(ListPolicyVersionsRequest) returns (ListPolicyVersionsResponse);
+
+  // CreateNamespace creates a namespace in an organization.
+  rpc CreateNamespace(CreateNamespaceRequest) returns (CreateNamespaceResponse);
+
+  // GetNamespace retrieves a namespace, with whether it is public.
+  rpc GetNamespace(GetNamespaceRequest) returns (GetNamespaceResponse);
+
+  // ListNamespaces lists an organization's namespaces.
+  rpc ListNamespaces(ListNamespacesRequest) returns (ListNamespacesResponse);
+
+  // DeleteNamespace deletes a namespace (never the default one).
+  rpc DeleteNamespace(DeleteNamespaceRequest) returns (DeleteNamespaceResponse);
+
+  // SetNamespaceVisibility opens a namespace's attestations to anyone, or
+  // closes them again.
+  rpc SetNamespaceVisibility(SetNamespaceVisibilityRequest) returns (SetNamespaceVisibilityResponse);
 
   // HealthCheck checks service health.
   rpc HealthCheck(HealthCheckRequest) returns (HealthCheckResponse);

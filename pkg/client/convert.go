@@ -134,3 +134,23 @@ func parseAddress(baseURL string) (address string, insecure bool) {
 
 	return host + ":" + port, insecure
 }
+
+// protoToNamespace converts a proto Namespace to the client model. The
+// numeric id is a storage detail the proto does not carry.
+func protoToNamespace(pb *stashv1.Namespace) *Namespace {
+	if pb == nil {
+		return nil
+	}
+	ns := &Namespace{
+		OrgID:  pb.GetOrgId(),
+		Name:   pb.GetName(),
+		Public: pb.GetPublic(),
+	}
+	if ts := pb.GetCreatedAt(); ts != nil {
+		ns.CreatedAt = ts.AsTime()
+	}
+	if ts := pb.GetUpdatedAt(); ts != nil {
+		ns.UpdatedAt = ts.AsTime()
+	}
+	return ns
+}

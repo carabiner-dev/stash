@@ -19,21 +19,26 @@ import (
 const _ = grpc.SupportPackageIsVersion9
 
 const (
-	StashService_UploadAttestations_FullMethodName = "/carabiner.stash.v1.StashService/UploadAttestations"
-	StashService_GetAttestation_FullMethodName     = "/carabiner.stash.v1.StashService/GetAttestation"
-	StashService_ListAttestations_FullMethodName   = "/carabiner.stash.v1.StashService/ListAttestations"
-	StashService_DeleteAttestation_FullMethodName  = "/carabiner.stash.v1.StashService/DeleteAttestation"
-	StashService_UpdateAttestation_FullMethodName  = "/carabiner.stash.v1.StashService/UpdateAttestation"
-	StashService_UploadPublicKey_FullMethodName    = "/carabiner.stash.v1.StashService/UploadPublicKey"
-	StashService_DeletePublicKey_FullMethodName    = "/carabiner.stash.v1.StashService/DeletePublicKey"
-	StashService_ListPublicKeys_FullMethodName     = "/carabiner.stash.v1.StashService/ListPublicKeys"
-	StashService_PushPolicies_FullMethodName       = "/carabiner.stash.v1.StashService/PushPolicies"
-	StashService_AppendPolicy_FullMethodName       = "/carabiner.stash.v1.StashService/AppendPolicy"
-	StashService_GetPolicy_FullMethodName          = "/carabiner.stash.v1.StashService/GetPolicy"
-	StashService_DeletePolicy_FullMethodName       = "/carabiner.stash.v1.StashService/DeletePolicy"
-	StashService_ListPolicies_FullMethodName       = "/carabiner.stash.v1.StashService/ListPolicies"
-	StashService_ListPolicyVersions_FullMethodName = "/carabiner.stash.v1.StashService/ListPolicyVersions"
-	StashService_HealthCheck_FullMethodName        = "/carabiner.stash.v1.StashService/HealthCheck"
+	StashService_UploadAttestations_FullMethodName     = "/carabiner.stash.v1.StashService/UploadAttestations"
+	StashService_GetAttestation_FullMethodName         = "/carabiner.stash.v1.StashService/GetAttestation"
+	StashService_ListAttestations_FullMethodName       = "/carabiner.stash.v1.StashService/ListAttestations"
+	StashService_DeleteAttestation_FullMethodName      = "/carabiner.stash.v1.StashService/DeleteAttestation"
+	StashService_UpdateAttestation_FullMethodName      = "/carabiner.stash.v1.StashService/UpdateAttestation"
+	StashService_UploadPublicKey_FullMethodName        = "/carabiner.stash.v1.StashService/UploadPublicKey"
+	StashService_DeletePublicKey_FullMethodName        = "/carabiner.stash.v1.StashService/DeletePublicKey"
+	StashService_ListPublicKeys_FullMethodName         = "/carabiner.stash.v1.StashService/ListPublicKeys"
+	StashService_PushPolicies_FullMethodName           = "/carabiner.stash.v1.StashService/PushPolicies"
+	StashService_AppendPolicy_FullMethodName           = "/carabiner.stash.v1.StashService/AppendPolicy"
+	StashService_GetPolicy_FullMethodName              = "/carabiner.stash.v1.StashService/GetPolicy"
+	StashService_DeletePolicy_FullMethodName           = "/carabiner.stash.v1.StashService/DeletePolicy"
+	StashService_ListPolicies_FullMethodName           = "/carabiner.stash.v1.StashService/ListPolicies"
+	StashService_ListPolicyVersions_FullMethodName     = "/carabiner.stash.v1.StashService/ListPolicyVersions"
+	StashService_CreateNamespace_FullMethodName        = "/carabiner.stash.v1.StashService/CreateNamespace"
+	StashService_GetNamespace_FullMethodName           = "/carabiner.stash.v1.StashService/GetNamespace"
+	StashService_ListNamespaces_FullMethodName         = "/carabiner.stash.v1.StashService/ListNamespaces"
+	StashService_DeleteNamespace_FullMethodName        = "/carabiner.stash.v1.StashService/DeleteNamespace"
+	StashService_SetNamespaceVisibility_FullMethodName = "/carabiner.stash.v1.StashService/SetNamespaceVisibility"
+	StashService_HealthCheck_FullMethodName            = "/carabiner.stash.v1.StashService/HealthCheck"
 )
 
 // StashServiceClient is the client API for StashService service.
@@ -77,6 +82,17 @@ type StashServiceClient interface {
 	ListPolicies(ctx context.Context, in *ListPoliciesRequest, opts ...grpc.CallOption) (*ListPoliciesResponse, error)
 	// ListPolicyVersions lists every version of one policy lineage, newest first.
 	ListPolicyVersions(ctx context.Context, in *ListPolicyVersionsRequest, opts ...grpc.CallOption) (*ListPolicyVersionsResponse, error)
+	// CreateNamespace creates a namespace in an organization.
+	CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error)
+	// GetNamespace retrieves a namespace, with whether it is public.
+	GetNamespace(ctx context.Context, in *GetNamespaceRequest, opts ...grpc.CallOption) (*GetNamespaceResponse, error)
+	// ListNamespaces lists an organization's namespaces.
+	ListNamespaces(ctx context.Context, in *ListNamespacesRequest, opts ...grpc.CallOption) (*ListNamespacesResponse, error)
+	// DeleteNamespace deletes a namespace (never the default one).
+	DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*DeleteNamespaceResponse, error)
+	// SetNamespaceVisibility opens a namespace's attestations to anyone, or
+	// closes them again.
+	SetNamespaceVisibility(ctx context.Context, in *SetNamespaceVisibilityRequest, opts ...grpc.CallOption) (*SetNamespaceVisibilityResponse, error)
 	// HealthCheck checks service health.
 	HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error)
 }
@@ -229,6 +245,56 @@ func (c *stashServiceClient) ListPolicyVersions(ctx context.Context, in *ListPol
 	return out, nil
 }
 
+func (c *stashServiceClient) CreateNamespace(ctx context.Context, in *CreateNamespaceRequest, opts ...grpc.CallOption) (*CreateNamespaceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(CreateNamespaceResponse)
+	err := c.cc.Invoke(ctx, StashService_CreateNamespace_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) GetNamespace(ctx context.Context, in *GetNamespaceRequest, opts ...grpc.CallOption) (*GetNamespaceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(GetNamespaceResponse)
+	err := c.cc.Invoke(ctx, StashService_GetNamespace_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) ListNamespaces(ctx context.Context, in *ListNamespacesRequest, opts ...grpc.CallOption) (*ListNamespacesResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ListNamespacesResponse)
+	err := c.cc.Invoke(ctx, StashService_ListNamespaces_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) DeleteNamespace(ctx context.Context, in *DeleteNamespaceRequest, opts ...grpc.CallOption) (*DeleteNamespaceResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(DeleteNamespaceResponse)
+	err := c.cc.Invoke(ctx, StashService_DeleteNamespace_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *stashServiceClient) SetNamespaceVisibility(ctx context.Context, in *SetNamespaceVisibilityRequest, opts ...grpc.CallOption) (*SetNamespaceVisibilityResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SetNamespaceVisibilityResponse)
+	err := c.cc.Invoke(ctx, StashService_SetNamespaceVisibility_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *stashServiceClient) HealthCheck(ctx context.Context, in *HealthCheckRequest, opts ...grpc.CallOption) (*HealthCheckResponse, error) {
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(HealthCheckResponse)
@@ -280,6 +346,17 @@ type StashServiceServer interface {
 	ListPolicies(context.Context, *ListPoliciesRequest) (*ListPoliciesResponse, error)
 	// ListPolicyVersions lists every version of one policy lineage, newest first.
 	ListPolicyVersions(context.Context, *ListPolicyVersionsRequest) (*ListPolicyVersionsResponse, error)
+	// CreateNamespace creates a namespace in an organization.
+	CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error)
+	// GetNamespace retrieves a namespace, with whether it is public.
+	GetNamespace(context.Context, *GetNamespaceRequest) (*GetNamespaceResponse, error)
+	// ListNamespaces lists an organization's namespaces.
+	ListNamespaces(context.Context, *ListNamespacesRequest) (*ListNamespacesResponse, error)
+	// DeleteNamespace deletes a namespace (never the default one).
+	DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*DeleteNamespaceResponse, error)
+	// SetNamespaceVisibility opens a namespace's attestations to anyone, or
+	// closes them again.
+	SetNamespaceVisibility(context.Context, *SetNamespaceVisibilityRequest) (*SetNamespaceVisibilityResponse, error)
 	// HealthCheck checks service health.
 	HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error)
 	mustEmbedUnimplementedStashServiceServer()
@@ -333,6 +410,21 @@ func (UnimplementedStashServiceServer) ListPolicies(context.Context, *ListPolici
 }
 func (UnimplementedStashServiceServer) ListPolicyVersions(context.Context, *ListPolicyVersionsRequest) (*ListPolicyVersionsResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method ListPolicyVersions not implemented")
+}
+func (UnimplementedStashServiceServer) CreateNamespace(context.Context, *CreateNamespaceRequest) (*CreateNamespaceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method CreateNamespace not implemented")
+}
+func (UnimplementedStashServiceServer) GetNamespace(context.Context, *GetNamespaceRequest) (*GetNamespaceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method GetNamespace not implemented")
+}
+func (UnimplementedStashServiceServer) ListNamespaces(context.Context, *ListNamespacesRequest) (*ListNamespacesResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ListNamespaces not implemented")
+}
+func (UnimplementedStashServiceServer) DeleteNamespace(context.Context, *DeleteNamespaceRequest) (*DeleteNamespaceResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method DeleteNamespace not implemented")
+}
+func (UnimplementedStashServiceServer) SetNamespaceVisibility(context.Context, *SetNamespaceVisibilityRequest) (*SetNamespaceVisibilityResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method SetNamespaceVisibility not implemented")
 }
 func (UnimplementedStashServiceServer) HealthCheck(context.Context, *HealthCheckRequest) (*HealthCheckResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method HealthCheck not implemented")
@@ -610,6 +702,96 @@ func _StashService_ListPolicyVersions_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _StashService_CreateNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).CreateNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_CreateNamespace_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).CreateNamespace(ctx, req.(*CreateNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_GetNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).GetNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_GetNamespace_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).GetNamespace(ctx, req.(*GetNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_ListNamespaces_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ListNamespacesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).ListNamespaces(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_ListNamespaces_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).ListNamespaces(ctx, req.(*ListNamespacesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_DeleteNamespace_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteNamespaceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).DeleteNamespace(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_DeleteNamespace_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).DeleteNamespace(ctx, req.(*DeleteNamespaceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _StashService_SetNamespaceVisibility_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetNamespaceVisibilityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(StashServiceServer).SetNamespaceVisibility(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: StashService_SetNamespaceVisibility_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(StashServiceServer).SetNamespaceVisibility(ctx, req.(*SetNamespaceVisibilityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _StashService_HealthCheck_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(HealthCheckRequest)
 	if err := dec(in); err != nil {
@@ -690,6 +872,26 @@ var StashService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ListPolicyVersions",
 			Handler:    _StashService_ListPolicyVersions_Handler,
+		},
+		{
+			MethodName: "CreateNamespace",
+			Handler:    _StashService_CreateNamespace_Handler,
+		},
+		{
+			MethodName: "GetNamespace",
+			Handler:    _StashService_GetNamespace_Handler,
+		},
+		{
+			MethodName: "ListNamespaces",
+			Handler:    _StashService_ListNamespaces_Handler,
+		},
+		{
+			MethodName: "DeleteNamespace",
+			Handler:    _StashService_DeleteNamespace_Handler,
+		},
+		{
+			MethodName: "SetNamespaceVisibility",
+			Handler:    _StashService_SetNamespaceVisibility_Handler,
 		},
 		{
 			MethodName: "HealthCheck",
