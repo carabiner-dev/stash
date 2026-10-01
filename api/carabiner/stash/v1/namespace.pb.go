@@ -34,6 +34,12 @@ type Namespace struct {
 	Public    bool                   `protobuf:"varint,2,opt,name=public,proto3" json:"public,omitempty"`
 	CreatedAt *timestamppb.Timestamp `protobuf:"bytes,3,opt,name=created_at,json=createdAt,proto3" json:"created_at,omitempty"`
 	UpdatedAt *timestamppb.Timestamp `protobuf:"bytes,4,opt,name=updated_at,json=updatedAt,proto3" json:"updated_at,omitempty"`
+	// attestation_count is how many attestations the namespace holds. Set
+	// only when the request asked for counts (with_counts).
+	AttestationCount *int64 `protobuf:"varint,5,opt,name=attestation_count,json=attestationCount,proto3,oneof" json:"attestation_count,omitempty"`
+	// policy_count is how many policy documents (every stored version) the
+	// namespace holds. Set only when the request asked for counts.
+	PolicyCount *int64 `protobuf:"varint,6,opt,name=policy_count,json=policyCount,proto3,oneof" json:"policy_count,omitempty"`
 	// Organization ID (the organization handle).
 	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -96,6 +102,20 @@ func (x *Namespace) GetUpdatedAt() *timestamppb.Timestamp {
 		return x.UpdatedAt
 	}
 	return nil
+}
+
+func (x *Namespace) GetAttestationCount() int64 {
+	if x != nil && x.AttestationCount != nil {
+		return *x.AttestationCount
+	}
+	return 0
+}
+
+func (x *Namespace) GetPolicyCount() int64 {
+	if x != nil && x.PolicyCount != nil {
+		return *x.PolicyCount
+	}
+	return 0
 }
 
 func (x *Namespace) GetOrgId() string {
@@ -219,6 +239,8 @@ type GetNamespaceRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	// The namespace name (empty string = default namespace).
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
+	// with_counts asks for the namespace's document counts.
+	WithCounts bool `protobuf:"varint,2,opt,name=with_counts,json=withCounts,proto3" json:"with_counts,omitempty"`
 	// Organization ID (required, must be valid DNS hostname).
 	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -260,6 +282,13 @@ func (x *GetNamespaceRequest) GetName() string {
 		return x.Name
 	}
 	return ""
+}
+
+func (x *GetNamespaceRequest) GetWithCounts() bool {
+	if x != nil {
+		return x.WithCounts
+	}
+	return false
 }
 
 func (x *GetNamespaceRequest) GetOrgId() string {
@@ -314,9 +343,12 @@ func (x *GetNamespaceResponse) GetNamespace() *Namespace {
 	return nil
 }
 
-// ListNamespacesRequest lists an organization's namespaces.
+// ListNamespacesRequest lists an organization's namespaces. The default
+// namespace is always listed: it exists before anything gives it a record.
 type ListNamespacesRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
+	// with_counts asks for each namespace's document counts.
+	WithCounts bool `protobuf:"varint,1,opt,name=with_counts,json=withCounts,proto3" json:"with_counts,omitempty"`
 	// Organization ID (required, must be valid DNS hostname).
 	OrgId         string `protobuf:"bytes,10,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
@@ -351,6 +383,13 @@ func (x *ListNamespacesRequest) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ListNamespacesRequest.ProtoReflect.Descriptor instead.
 func (*ListNamespacesRequest) Descriptor() ([]byte, []int) {
 	return file_carabiner_stash_v1_namespace_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *ListNamespacesRequest) GetWithCounts() bool {
+	if x != nil {
+		return x.WithCounts
+	}
+	return false
 }
 
 func (x *ListNamespacesRequest) GetOrgId() string {
@@ -406,7 +445,7 @@ func (x *ListNamespacesResponse) GetNamespaces() []*Namespace {
 }
 
 // DeleteNamespaceRequest deletes a namespace. The default namespace cannot
-// be deleted.
+// be deleted, nor can one that still holds attestations or policies.
 type DeleteNamespaceRequest struct {
 	state protoimpl.MessageState `protogen:"open.v1"`
 	Name  string                 `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
@@ -618,30 +657,38 @@ var File_carabiner_stash_v1_namespace_proto protoreflect.FileDescriptor
 
 const file_carabiner_stash_v1_namespace_proto_rawDesc = "" +
 	"\n" +
-	"\"carabiner/stash/v1/namespace.proto\x12\x12carabiner.stash.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc4\x01\n" +
+	"\"carabiner/stash/v1/namespace.proto\x12\x12carabiner.stash.v1\x1a\x1fgoogle/protobuf/timestamp.proto\"\xc5\x02\n" +
 	"\tNamespace\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
 	"\x06public\x18\x02 \x01(\bR\x06public\x129\n" +
 	"\n" +
 	"created_at\x18\x03 \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
-	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x12\x15\n" +
+	"updated_at\x18\x04 \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\x120\n" +
+	"\x11attestation_count\x18\x05 \x01(\x03H\x00R\x10attestationCount\x88\x01\x01\x12&\n" +
+	"\fpolicy_count\x18\x06 \x01(\x03H\x01R\vpolicyCount\x88\x01\x01\x12\x15\n" +
 	"\x06org_id\x18\n" +
-	" \x01(\tR\x05orgId\"[\n" +
+	" \x01(\tR\x05orgIdB\x14\n" +
+	"\x12_attestation_countB\x0f\n" +
+	"\r_policy_count\"[\n" +
 	"\x16CreateNamespaceRequest\x12\x12\n" +
 	"\x04name\x18\x01 \x01(\tR\x04name\x12\x16\n" +
 	"\x06public\x18\x02 \x01(\bR\x06public\x12\x15\n" +
 	"\x06org_id\x18\n" +
 	" \x01(\tR\x05orgId\"V\n" +
 	"\x17CreateNamespaceResponse\x12;\n" +
-	"\tnamespace\x18\x01 \x01(\v2\x1d.carabiner.stash.v1.NamespaceR\tnamespace\"@\n" +
+	"\tnamespace\x18\x01 \x01(\v2\x1d.carabiner.stash.v1.NamespaceR\tnamespace\"a\n" +
 	"\x13GetNamespaceRequest\x12\x12\n" +
-	"\x04name\x18\x01 \x01(\tR\x04name\x12\x15\n" +
+	"\x04name\x18\x01 \x01(\tR\x04name\x12\x1f\n" +
+	"\vwith_counts\x18\x02 \x01(\bR\n" +
+	"withCounts\x12\x15\n" +
 	"\x06org_id\x18\n" +
 	" \x01(\tR\x05orgId\"S\n" +
 	"\x14GetNamespaceResponse\x12;\n" +
-	"\tnamespace\x18\x01 \x01(\v2\x1d.carabiner.stash.v1.NamespaceR\tnamespace\".\n" +
-	"\x15ListNamespacesRequest\x12\x15\n" +
+	"\tnamespace\x18\x01 \x01(\v2\x1d.carabiner.stash.v1.NamespaceR\tnamespace\"O\n" +
+	"\x15ListNamespacesRequest\x12\x1f\n" +
+	"\vwith_counts\x18\x01 \x01(\bR\n" +
+	"withCounts\x12\x15\n" +
 	"\x06org_id\x18\n" +
 	" \x01(\tR\x05orgId\"W\n" +
 	"\x16ListNamespacesResponse\x12=\n" +
@@ -709,6 +756,7 @@ func file_carabiner_stash_v1_namespace_proto_init() {
 	if File_carabiner_stash_v1_namespace_proto != nil {
 		return
 	}
+	file_carabiner_stash_v1_namespace_proto_msgTypes[0].OneofWrappers = []any{}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
 		File: protoimpl.DescBuilder{

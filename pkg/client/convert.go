@@ -142,9 +142,11 @@ func protoToNamespace(pb *stashv1.Namespace) *Namespace {
 		return nil
 	}
 	ns := &Namespace{
-		OrgID:  pb.GetOrgId(),
-		Name:   pb.GetName(),
-		Public: pb.GetPublic(),
+		OrgID:            pb.GetOrgId(),
+		Name:             pb.GetName(),
+		Public:           pb.GetPublic(),
+		AttestationCount: pb.AttestationCount,
+		PolicyCount:      pb.PolicyCount,
 	}
 	if ts := pb.GetCreatedAt(); ts != nil {
 		ns.CreatedAt = ts.AsTime()

@@ -20,6 +20,14 @@ message Namespace {
   google.protobuf.Timestamp created_at = 3;
   google.protobuf.Timestamp updated_at = 4;
 
+  // attestation_count is how many attestations the namespace holds. Set
+  // only when the request asked for counts (with_counts).
+  optional int64 attestation_count = 5;
+
+  // policy_count is how many policy documents (every stored version) the
+  // namespace holds. Set only when the request asked for counts.
+  optional int64 policy_count = 6;
+
   // Organization ID (the organization handle).
   string org_id = 10;
 }
@@ -46,6 +54,9 @@ message GetNamespaceRequest {
   // The namespace name (empty string = default namespace).
   string name = 1;
 
+  // with_counts asks for the namespace's document counts.
+  bool with_counts = 2;
+
   // Organization ID (required, must be valid DNS hostname).
   string org_id = 10;
 }
@@ -55,8 +66,12 @@ message GetNamespaceResponse {
   Namespace namespace = 1;
 }
 
-// ListNamespacesRequest lists an organization's namespaces.
+// ListNamespacesRequest lists an organization's namespaces. The default
+// namespace is always listed: it exists before anything gives it a record.
 message ListNamespacesRequest {
+  // with_counts asks for each namespace's document counts.
+  bool with_counts = 1;
+
   // Organization ID (required, must be valid DNS hostname).
   string org_id = 10;
 }
@@ -67,7 +82,7 @@ message ListNamespacesResponse {
 }
 
 // DeleteNamespaceRequest deletes a namespace. The default namespace cannot
-// be deleted.
+// be deleted, nor can one that still holds attestations or policies.
 message DeleteNamespaceRequest {
   string name = 1;
 

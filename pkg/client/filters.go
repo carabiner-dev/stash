@@ -144,9 +144,13 @@ type Namespace struct {
 	// Public opens the namespace's attestations to anyone: reads pass for a
 	// caller with no token, and for one whose token holds no permission on
 	// the organization. Nothing else is public.
-	Public    bool      `json:"public"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	Public bool `json:"public"`
+	// AttestationCount and PolicyCount are how many documents the namespace
+	// holds; nil when the listing did not ask for counts.
+	AttestationCount *int64    `json:"attestation_count,omitempty"`
+	PolicyCount      *int64    `json:"policy_count,omitempty"`
+	CreatedAt        time.Time `json:"created_at"`
+	UpdatedAt        time.Time `json:"updated_at"`
 }
 
 // AttestationList represents a list of attestations with pagination.
