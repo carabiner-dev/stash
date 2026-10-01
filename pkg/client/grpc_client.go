@@ -11,6 +11,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/metadata"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	stashv1 "github.com/carabiner-dev/stash/api/carabiner/stash/v1"
 	"github.com/carabiner-dev/stash/pkg/client/config"
@@ -338,6 +339,12 @@ func (c *GRPCClient) ListAttestations(ctx context.Context, orgID, namespace stri
 			SignerIdentity:   filters.SignerIdentity,
 			SignedOnly:       filters.SignedOnly,
 			ValidatedOnly:    filters.ValidatedOnly,
+		}
+		if !filters.CreatedSince.IsZero() {
+			req.Filters.CreatedSince = timestamppb.New(filters.CreatedSince)
+		}
+		if !filters.CreatedUntil.IsZero() {
+			req.Filters.CreatedUntil = timestamppb.New(filters.CreatedUntil)
 		}
 	}
 

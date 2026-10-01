@@ -34,6 +34,14 @@ type Filters struct {
 
 	// ValidatedOnly filters to only validated attestations.
 	ValidatedOnly bool
+
+	// CreatedSince is the inclusive lower bound on when the attestation was
+	// stored; the zero time means no lower bound.
+	CreatedSince time.Time
+
+	// CreatedUntil is the inclusive upper bound on when the attestation was
+	// stored; the zero time means no upper bound.
+	CreatedUntil time.Time
 }
 
 // Cursor represents pagination cursor.
@@ -76,6 +84,12 @@ func (f *Filters) toQueryParams(cursor *Cursor) url.Values {
 		}
 		if f.ValidatedOnly {
 			params.Set("validated", "true")
+		}
+		if !f.CreatedSince.IsZero() {
+			params.Set("created_since", f.CreatedSince.UTC().Format(time.RFC3339Nano))
+		}
+		if !f.CreatedUntil.IsZero() {
+			params.Set("created_until", f.CreatedUntil.UTC().Format(time.RFC3339Nano))
 		}
 	}
 

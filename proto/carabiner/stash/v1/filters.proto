@@ -4,6 +4,8 @@ package carabiner.stash.v1;
 
 option go_package = "github.com/carabiner-dev/stash/api/carabiner/stash/v1;stashv1";
 
+import "google/protobuf/timestamp.proto";
+
 // Filters for querying attestations.
 message Filters {
   string predicate_type = 1;
@@ -15,6 +17,14 @@ message Filters {
   string signer_identity = 7;
   bool signed_only = 8;
   bool validated_only = 9;
+
+  // created_since is the inclusive lower bound on when the attestation was
+  // stored; unset means no lower bound.
+  google.protobuf.Timestamp created_since = 10;
+
+  // created_until is the inclusive upper bound on when the attestation was
+  // stored; unset means no upper bound.
+  google.protobuf.Timestamp created_until = 11;
 }
 
 // Cursor for pagination.
