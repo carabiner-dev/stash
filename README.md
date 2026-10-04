@@ -332,7 +332,7 @@ err = stashClient.DeletePublicKey(ctx, "key-id")
 
 #### Attestation Framework Repository Interface
 
-The Stash client implements the [Carabiner Attestation Framework](https://github.com/carabiner-dev/attestation) repository interfaces, allowing it to be used as a backend for attestation storage and retrieval in the framework.
+The Stash client implements the [Carabiner Attestation Framework](https://github.com/policylabs/attestation) repository interfaces, allowing it to be used as a backend for attestation storage and retrieval in the framework.
 
 **Implemented Interfaces:**
 - `attestation.Fetcher` - Retrieve attestations
@@ -343,7 +343,7 @@ The Stash client implements the [Carabiner Attestation Framework](https://github
 
 ```go
 import (
-    "github.com/carabiner-dev/attestation"
+    "github.com/policylabs/attestation"
     "github.com/carabiner-dev/stash/pkg/client"
 )
 
