@@ -10,7 +10,7 @@ import (
 	"fmt"
 
 	"github.com/carabiner-dev/attestation"
-	"github.com/carabiner-dev/collector/envelope"
+	"github.com/policylabs/collector/envelope"
 )
 
 // RepositoryClient wraps a StashClient to implement attestation framework repository interfaces.
