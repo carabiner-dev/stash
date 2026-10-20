@@ -3,7 +3,7 @@ module github.com/carabiner-dev/stash
 go 1.26.0
 
 require (
-	github.com/carabiner-dev/command v0.3.3
+	github.com/carabiner-dev/command v0.3.4
 	github.com/carabiner-dev/deadrop v0.0.0-20260228173914-d95e9ea2877d
 	github.com/carabiner-dev/termtable v1.1.0
 	github.com/policylabs/collector v0.3.18-0.20261004181826-7defc19e0f8e
