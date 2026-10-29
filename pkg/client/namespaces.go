@@ -40,7 +40,7 @@ func (c *Client) GetNamespace(ctx context.Context, orgID, name string) (*Namespa
 	var ns Namespace
 
 	// All requests use explicit orgID endpoint
-	path := fmt.Sprintf("/v1/namespaces/%s/%s", orgID, name)
+	path := fmt.Sprintf("/v1/namespaces/%s/%s", orgID, normalizeNamespace(name))
 
 	if err := c.doRequest(ctx, "GET", path, nil, &ns); err != nil {
 		return nil, err
@@ -78,7 +78,7 @@ func (c *Client) DeleteNamespace(ctx context.Context, orgID, name string) error 
 	}
 
 	// All requests use explicit orgID endpoint
-	path := fmt.Sprintf("/v1/namespaces/%s/%s", orgID, name)
+	path := fmt.Sprintf("/v1/namespaces/%s/%s", orgID, normalizeNamespace(name))
 
 	return c.doRequest(ctx, "DELETE", path, nil, nil)
 }
@@ -98,7 +98,7 @@ func (c *Client) SetNamespaceVisibility(ctx context.Context, orgID, name string,
 	if name == "" {
 		name = "_"
 	}
-	path := fmt.Sprintf("/v1/namespaces/%s/%s/visibility", orgID, name)
+	path := fmt.Sprintf("/v1/namespaces/%s/%s/visibility", orgID, normalizeNamespace(name))
 	if err := c.doRequest(ctx, "PUT", path, req, &ns); err != nil {
 		return nil, err
 	}

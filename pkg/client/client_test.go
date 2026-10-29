@@ -33,6 +33,11 @@ func TestNormalizeNamespace(t *testing.T) {
 			namespace: "app",
 			want:      "app",
 		},
+		{
+			name:      "a repository's namespace travels as one segment",
+			namespace: "repository:acme/github/acme-gh/widgets",
+			want:      "repository:acme%2Fgithub%2Facme-gh%2Fwidgets",
+		},
 	}
 
 	for _, tt := range tests {

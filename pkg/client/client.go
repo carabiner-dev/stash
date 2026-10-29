@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strings"
 	"time"
 
 	"github.com/carabiner-dev/stash/pkg/client/config"
@@ -64,13 +65,14 @@ func (c *Client) Close() error {
 	return nil
 }
 
-// normalizeNamespace handles empty namespace for URL paths.
-// Empty namespace means the default namespace - we can omit it from the URL path.
-// The server accepts both /v1/attestations/{orgID} and /v1/attestations/{orgID}/_
+// normalizeNamespace renders a namespace for a URL path. The empty
+// namespace is the default one and is omitted from the path; anything else
+// is one path segment, with the slashes a repository's namespace carries
+// (repository:<org>/<system>/<login>/<name>) escaped, since to the server
+// the namespace is one name. Nothing else is touched: "_" and "*" keep
+// their meaning in a path.
 func normalizeNamespace(namespace string) string {
-	// Empty string stays empty - will be omitted from URL
-	// Underscore and other values stay as-is
-	return namespace
+	return strings.ReplaceAll(namespace, "/", "%2F")
 }
 
 // doRequest performs an HTTP request with authentication.
