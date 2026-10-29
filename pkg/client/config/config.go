@@ -35,10 +35,14 @@ type Config struct {
 	tokenSource credentials.TokenSource
 }
 
-// DefaultConfig returns the default client configuration.
+// DefaultConfig returns the default client configuration: the public stash
+// and auth servers, as the CLI documents (STASH_URL and STASH_AUTH_SERVER
+// point a client elsewhere, a local server included). The server URL is
+// also the audience of the token the client exchanges for, so a stray
+// default here is a token no exchanger admits.
 func DefaultConfig() *Config {
 	return &Config{
-		BaseURL:               "http://localhost:8080",
+		BaseURL:               "https://stash.carabiner.dev",
 		AuthServer:            "https://auth.carabiner.dev",
 		UseCredentialsManager: true,
 	}
