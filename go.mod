@@ -5,7 +5,7 @@ go 1.26.0
 require (
 	github.com/carabiner-dev/command v0.3.4
 	github.com/carabiner-dev/deadrop v0.0.0-20260228173914-d95e9ea2877d
-	github.com/carabiner-dev/termtable v1.1.0
+	github.com/carabiner-dev/termtable v1.1.1
 	github.com/policylabs/collector v0.4.0
 	github.com/spf13/cobra v1.10.2
 	google.golang.org/grpc v1.85.0
@@ -148,8 +148,8 @@ require (
 	golang.org/x/net v0.60.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
 	golang.org/x/sync v0.23.0 // indirect
-	golang.org/x/sys v0.48.0 // indirect
-	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/term v0.47.0 // indirect
 	golang.org/x/text v0.42.0 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260819154853-08b0e4226688 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260819154853-08b0e4226688 // indirect
