@@ -19,6 +19,9 @@ import (
 type Client struct {
 	config     *config.Config
 	httpClient *http.Client
+	// Parallelism bounds a group read (GetPolicies, GetAttestations); zero
+	// is DefaultGroupParallelism.
+	Parallelism int
 }
 
 // NewClient creates a new Stash client with the given base URL and token.

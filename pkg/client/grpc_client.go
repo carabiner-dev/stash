@@ -23,6 +23,9 @@ type GRPCClient struct {
 	client stashv1.StashServiceClient
 	token  string
 	config *config.Config // For dynamic token retrieval
+	// Parallelism bounds a group read (GetPolicies, GetAttestations); zero
+	// is DefaultGroupParallelism.
+	Parallelism int
 }
 
 // GRPCClientOptions contains options for creating a gRPC client.
