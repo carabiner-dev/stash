@@ -108,6 +108,14 @@ type StashClient interface {
 	// ListPolicyVersions returns every version of one lineage, newest first.
 	// orgID must be specified.
 	ListPolicyVersions(ctx context.Context, orgID, namespace, lineageID string) ([]*Policy, error)
+
+	// GetPolicies reads a group of policy versions in parallel, in the order
+	// given; the first failure fails the group.
+	GetPolicies(ctx context.Context, refs []PolicyRef) ([]*PolicyDocument, error)
+
+	// GetAttestations reads a group of attestations by id in parallel, in the
+	// order given; the first failure fails the group.
+	GetAttestations(ctx context.Context, refs []AttestationRef) ([]*AttestationDocument, error)
 }
 
 // Ensure both client types implement the interface.
